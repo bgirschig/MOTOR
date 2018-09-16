@@ -1,0 +1,7 @@
+{
+    "compName": "main",
+    "resources": [],
+    "encoders": [
+        {"presetName": "smol_vid", "filename": "video"}
+    ]
+}

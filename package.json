@@ -14,6 +14,7 @@
     "basic-ftp": "^2.13.2",
     "fs-extra": "^7.0.0",
     "node-fetch": "^2.2.0",
+    "object-hash": "^1.3.0",
     "xml-writer": "^1.7.0"
   }
 }

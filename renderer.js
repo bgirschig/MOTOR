@@ -4,7 +4,6 @@ const fetch = require('node-fetch');
 const ftp = require('basic-ftp');
 const spawn = require('child_process').spawn;
 const runEncoders = require('./encodersRunner');
-const renderRequest = require('./test_request');
 const config = require("./config");
 
 const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
