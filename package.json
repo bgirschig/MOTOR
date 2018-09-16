@@ -10,6 +10,7 @@
   "author": "Bastien Girschig <bastien.girschig@gmail.com> (http://www.bastiengirschig.fr)",
   "license": "MIT",
   "dependencies": {
+    "basic-ftp": "^2.13.2",
     "fs-extra": "^7.0.0",
     "node-fetch": "^2.2.0"
   }

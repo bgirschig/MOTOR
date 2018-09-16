@@ -2,6 +2,8 @@ const path = require("path");
 const express = require("express");
 const fs = require('fs-extra')
 const fetch = require('node-fetch');
+const FtpClient = require('ftp');
+const ftp = require('basic-ftp');
 var spawn = require('child_process').spawn;
 
 const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
@@ -12,7 +14,7 @@ const DEFAULT_COMP_NAME = 'main';
 const renderRequest = {
     template: "boat",
     compName: "main",
-    id: "5789145",
+    id: "5789147q",
     resources: [
         // {target: "img.png", source: "http://images.math.cnrs.fr/IMG/png/section8-image.png"},
         {target: "img.png", source: "https://via.placeholder.com/350x150/FF7700/FFFFFF?text================="},
@@ -21,15 +23,41 @@ const renderRequest = {
         }},
     ],
 }
+const ftpConfig = {
 
-function render (request) {
-    let {templateFilePath, outputFilePath, compName} = prepareRender(request);
+
+
+
+}
+
+function handle_request() {
+    let {templateFilePath, outputDir, compName,
+         renderProjectDir} = prepareRender(renderRequest);
+
+    render(templateFilePath, outputDir, compName, renderProjectDir)
+    .then(()=>upload(outputDir, renderRequest.id))
+    .then(()=>fs.remove(renderProjectDir))
+    .catch(e=>console.error(e));
+}
+
+async function upload (outputDir, target) {
+    const client = new ftp.Client();
+    try {
+        await client.access(ftpConfig);
+        await client.uploadDir(outputDir, target);
+    } catch(err) {
+        console.log(err);
+    }
+    client.close();
+}
+
+function render (templateFilePath, outputDir, compName) {
     let errors = []
 
     var ae = spawn(AERENDER_PATH, [
         '-project', templateFilePath,
         '-comp', compName,
-        '-output', outputFilePath,
+        '-output', path.join(outputDir, 'lossless'),
     ]);
     ae.on('error', function (err) {
         errors.push(err);
@@ -53,9 +81,6 @@ function render (request) {
             }
         });
     })
-
-    // convert
-    // upload
 }
 
 /**
@@ -67,20 +92,21 @@ function prepareRender (request) {
     // TODO: make this whole function asynchronous
 
     // Define some paths
-    const renderDir = path.join(RENDER_TEMPS_DIR, request.id);
-    const resourcesPath = path.join(renderDir, "(Metrage)");
+    const renderProjectDir = path.join(RENDER_TEMPS_DIR, request.id);
+    const resourcesPath = path.join(renderProjectDir, "(Metrage)");
     const templateSourceDir = path.join(TEMPLATES_DIR, request.template);
     // no extension: aerender selects it depending on output module
-    const outputFilePath = path.join(renderDir, 'output');
-    const templateFilePath = path.join(renderDir, 'template.aepx');
+    const outputDir = path.join(renderProjectDir, 'output');
+    const templateFilePath = path.join(renderProjectDir, 'template.aepx');
 
     // Create folders
     if (!fs.existsSync(RENDER_TEMPS_DIR)) fs.mkdirSync(RENDER_TEMPS_DIR);
-    if (!fs.existsSync(renderDir)) fs.mkdirSync(renderDir);
+    if (!fs.existsSync(renderProjectDir)) fs.mkdirSync(renderProjectDir);
     if (!fs.existsSync(resourcesPath)) fs.mkdirSync(resourcesPath);
+    if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
 
     // Copy template files
-    fs.copySync(templateSourceDir, renderDir);
+    fs.copySync(templateSourceDir, renderProjectDir);
 
     // Define some variables
     const compName = request.compName || DEFAULT_COMP_NAME;
@@ -105,9 +131,7 @@ function prepareRender (request) {
         }
     }
 
-    return {templateFilePath, outputFilePath, compName}
+    return {templateFilePath, outputDir, compName, renderProjectDir}
 }
 
-render(renderRequest)
-.then(()=>console.log('yay'))
-.catch(e=>console.log(e.message));
+init();
