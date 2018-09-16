@@ -3,47 +3,36 @@ const express = require("express");
 const fs = require('fs-extra')
 const fetch = require('node-fetch');
 const ftp = require('basic-ftp');
-var spawn = require('child_process').spawn;
-const AME_client = require('./AME_client');
+const spawn = require('child_process').spawn;
+const runEncoders = require('./encodersRunner');
+const renderRequest = require('./test_request');
+const config = require("./config");
 
 const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
 const TEMPLATES_DIR = path.resolve('./templates');
 const AERENDER_PATH = '/Applications/Adobe\ After\ Effects\ CC\ 2018/aerender';
 const DEFAULT_COMP_NAME = 'main';
-
-const renderRequest = {
-    template: "boat",
-    compName: "main",
-    id: "5789147",
-    resources: [
-        {target: "img.png", source: "https://via.placeholder.com/350x150/FF7700/FFFFFF?text================="},
-        {target: "data.json", data: {
-            truc: "youpi",
-        }},
-    ],
-}
-const ftpConfig = {
-
-
-
-
-}
+const REMOTE_OUTPUT_DIR = 'render_outputs'
 
 function handle_request(request) {
     let {templateFilePath, outputDir, compName,
          renderProjectDir} = prepareRender(request);
 
-    render(templateFilePath, outputDir, compName, renderProjectDir)
-    .then(()=>convert(outputDir))
-    .then(()=>upload(outputDir, request.id))
-    .then(()=>fs.remove(renderProjectDir))
-    .catch(e=>console.error(e));
+    const losslessFile = path.join(outputDir, 'lossless.mov')
+
+    render(templateFilePath, losslessFile, compName, renderProjectDir)
+    .then(()=>runEncoders(losslessFile, request.encoders))
+    .then(()=>upload_renders(outputDir, request.id))
+    .catch(e=>console.error(e))
+    .then(()=>fs.remove(renderProjectDir));
 }
 
-async function upload (outputDir, target) {
+async function upload_renders (outputDir, target) {
+    console.log(outputDir, target);
     const client = new ftp.Client();
     try {
-        await client.access(ftpConfig);
+        await client.access(config.ftp);
+        await client.cd(REMOTE_OUTPUT_DIR);
         await client.uploadDir(outputDir, target);
     } catch(err) {
         console.log(err);
@@ -51,13 +40,13 @@ async function upload (outputDir, target) {
     client.close();
 }
 
-function render (templateFilePath, outputDir, compName) {
+function render (templateFilePath, losslessFile, compName) {
     let errors = []
 
     var ae = spawn(AERENDER_PATH, [
         '-project', templateFilePath,
         '-comp', compName,
-        '-output', path.join(outputDir, 'lossless'),
+        '-output', losslessFile,
     ]);
     ae.on('error', function (err) {
         errors.push(err);
@@ -132,37 +121,6 @@ function prepareRender (request) {
     }
 
     return {templateFilePath, outputDir, compName, renderProjectDir}
-}
-
-function convert (outputDir) {
-    let client = new AME_client.AMEWebserviceClient({
-        port: 8080,
-        // hostname: "40.89.138.229",
-        hostname: "192.168.0.12",
-    })
-
-    let prevstate = "";
-    let interval = setInterval(()=>{
-        client.getJobStatus().then((info)=>{
-            let state = info.jobStatusText;
-            if ('jobProgress' in info) state += ": " + info.jobProgress;
-            if (state !== prevstate) console.log(state);
-            
-            if (['Success', 'Failed'].includes(info.jobStatusText)){
-                clearInterval(interval);
-            } else {
-                prevstate = state;
-            }
-        });
-    }, 50);
-
-    return client.submitJob({
-        sourceFilePath: path.join(outputDir, 'lossless.mov'),
-        destinationPath: path.join(outputDir, 'video'),
-        sourcePresetPath: '/Users/bastienGirschig/Documents/Adobe/Adobe\ Media\ Encoder/12.0/Presets/smol_vid.epr',
-        overwriteDestinationIfPresent: true
-    })
-
 }
 
 handle_request(renderRequest);

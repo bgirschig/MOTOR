@@ -1,0 +1,16 @@
+{
+    "template": "boat",
+    "compName": "main",
+    "id": "5789147_4",
+    "resources": [
+        {"target": "img.png", "source": "https://via.placeholder.com/350x150/FF7700/FFFFFF?text================="},
+        {"target": "data.json", "data": {
+            "truc": "youpi"
+        }}
+    ],
+    "encoders": [
+        {"presetName": "smol_vid", "filename": "video_a"},
+        {"presetName": "smol_vid", "filename": "video_b"},
+        {"presetName": "smol_vid", "filename": "video_c"}
+    ]
+}

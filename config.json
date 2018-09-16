@@ -1,0 +1,14 @@
+{
+    "ftp": {
+        "host": null,
+        "port": null,
+        "user": null,
+        "password": null
+    },
+    "ae_render": "/Applications/Adobe After Effects CC 2018/aerender",
+    "presets_dir": "./encoder_presets",
+    "media_encoder": {
+        "port": 8080,
+        "hostname": "192.168.0.12"
+    }
+}
