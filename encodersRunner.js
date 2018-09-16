@@ -1,4 +1,4 @@
-const ame_webservice = require('./adobe-media-encoder-webservice');
+const ame_webservice = require('./third_party/adobe-media-encoder-webservice');
 const path = require("path");
 const config = require("./config");
 
