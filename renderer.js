@@ -18,7 +18,7 @@ function handle_request(request) {
 
     const losslessFile = path.join(outputDir, 'lossless.mov')
 
-    render(templateFilePath, losslessFile, compName, renderProjectDir)
+    return render(templateFilePath, losslessFile, compName, renderProjectDir)
     .then(()=>runEncoders(losslessFile, request.encoders))
     .then(()=>upload_renders(outputDir, request.id))
     .catch(e=>console.error(e))
