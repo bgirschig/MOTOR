@@ -2,9 +2,9 @@ const path = require("path");
 const express = require("express");
 const fs = require('fs-extra')
 const fetch = require('node-fetch');
-const FtpClient = require('ftp');
 const ftp = require('basic-ftp');
 var spawn = require('child_process').spawn;
+const AME_client = require('./AME_client');
 
 const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
 const TEMPLATES_DIR = path.resolve('./templates');
@@ -14,12 +14,11 @@ const DEFAULT_COMP_NAME = 'main';
 const renderRequest = {
     template: "boat",
     compName: "main",
-    id: "5789147q",
+    id: "5789147",
     resources: [
-        // {target: "img.png", source: "http://images.math.cnrs.fr/IMG/png/section8-image.png"},
         {target: "img.png", source: "https://via.placeholder.com/350x150/FF7700/FFFFFF?text================="},
         {target: "data.json", data: {
-            truc: "yamero !",
+            truc: "youpi",
         }},
     ],
 }
@@ -30,12 +29,13 @@ const ftpConfig = {
 
 }
 
-function handle_request() {
+function handle_request(request) {
     let {templateFilePath, outputDir, compName,
-         renderProjectDir} = prepareRender(renderRequest);
+         renderProjectDir} = prepareRender(request);
 
     render(templateFilePath, outputDir, compName, renderProjectDir)
-    .then(()=>upload(outputDir, renderRequest.id))
+    .then(()=>convert(outputDir))
+    .then(()=>upload(outputDir, request.id))
     .then(()=>fs.remove(renderProjectDir))
     .catch(e=>console.error(e));
 }
@@ -134,4 +134,35 @@ function prepareRender (request) {
     return {templateFilePath, outputDir, compName, renderProjectDir}
 }
 
-init();
+function convert (outputDir) {
+    let client = new AME_client.AMEWebserviceClient({
+        port: 8080,
+        // hostname: "40.89.138.229",
+        hostname: "192.168.0.12",
+    })
+
+    let prevstate = "";
+    let interval = setInterval(()=>{
+        client.getJobStatus().then((info)=>{
+            let state = info.jobStatusText;
+            if ('jobProgress' in info) state += ": " + info.jobProgress;
+            if (state !== prevstate) console.log(state);
+            
+            if (['Success', 'Failed'].includes(info.jobStatusText)){
+                clearInterval(interval);
+            } else {
+                prevstate = state;
+            }
+        });
+    }, 50);
+
+    return client.submitJob({
+        sourceFilePath: path.join(outputDir, 'lossless.mov'),
+        destinationPath: path.join(outputDir, 'video'),
+        sourcePresetPath: '/Users/bastienGirschig/Documents/Adobe/Adobe\ Media\ Encoder/12.0/Presets/smol_vid.epr',
+        overwriteDestinationIfPresent: true
+    })
+
+}
+
+handle_request(renderRequest);
