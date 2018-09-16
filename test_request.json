@@ -1,7 +1,7 @@
 {
     "template": "boat",
     "compName": "main",
-    "id": "5789147_4",
+    "id": "5789147_5",
     "resources": [
         {"target": "img.png", "source": "https://via.placeholder.com/350x150/FF7700/FFFFFF?text================="},
         {"target": "data.json", "data": {
