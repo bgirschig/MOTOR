@@ -19,8 +19,7 @@ app.post('/render', (req, res) => {
     request.id = hash(JSON.stringify(req.body) + Date.now())
 
     renderer(request)
-    .then(()=>console.log('request', request.id, 'done'));
-    
+
     res.send(`http://motor.bastiengirschig.com/render_outputs/${request.id}`);
 })
 

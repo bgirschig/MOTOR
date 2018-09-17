@@ -5,7 +5,7 @@ var http = require('http');
 var url = require('url');
 var xml2js = require('xml2js');
 var XmlWriter = require('xml-writer');
-var logging_interfaces_1 = require('logging-interfaces');
+var logging_interfaces_1 = require('../node-logging-interfaces');
 (function (AMESubmitResult) {
     AMESubmitResult[AMESubmitResult["Unknown"] = -1] = "Unknown";
     AMESubmitResult[AMESubmitResult["Accepted"] = 0] = "Accepted";

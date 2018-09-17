@@ -10,7 +10,7 @@ var http = require('http');
 var clone = require('clone');
 var StateMachine = require('finity').default;
 var uuid4 = require('uuid4');
-var logging_interfaces_1 = require('logging-interfaces');
+var logging_interfaces_1 = require('../node-logging-interfaces');
 var ame_webservice_client_1 = require('./ame-webservice-client');
 (function (AMEQueuedJobStatus) {
     AMEQueuedJobStatus[AMEQueuedJobStatus["Pending"] = 0] = "Pending";

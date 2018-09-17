@@ -1,5 +1,5 @@
 "use strict";
-var logging_interfaces_1 = require('logging-interfaces');
+var logging_interfaces_1 = require('../node-logging-interfaces');
 exports.ConsoleLogger = logging_interfaces_1.ConsoleLogger;
 exports.NullLogger = logging_interfaces_1.NullLogger;
 exports.NullLoggerFactory = logging_interfaces_1.NullLoggerFactory;

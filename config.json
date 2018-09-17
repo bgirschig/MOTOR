@@ -5,11 +5,12 @@
         "user": null,
         "password": null
     },
-    "ae_render": "/Applications/Adobe After Effects CC 2018/aerender",
+    "ae_render_osx": "/Applications/Adobe After Effects CC 2018/aerender",
+    "ae_render": "C:\\Program Files\\Adobe\\Adobe After Effects CC 2018\\Support Files\\aerender.exe",
     "presets_dir": "./encoder_presets",
     "media_encoder": {
         "port": 8080,
-        "hostname": "192.168.0.12"
+        "hostname": "localhost"
     },
-    "apiPort": 8080
+    "apiPort": 8081
 }
