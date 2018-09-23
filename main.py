@@ -36,7 +36,7 @@ class MailRequestHandler(InboundMailHandler):
         send_recap_mail(productInfos, mail_message.sender)
 
 def send_recap_mail(data, address):
-    template = jinja.get_template('templates/request_confirm_mail.html')
+    template = jinja.get_template('request_confirm_mail.html')
     mailContent = template.render({'products': data})
 
     mail.send_mail(
