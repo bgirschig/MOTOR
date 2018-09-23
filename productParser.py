@@ -1,6 +1,15 @@
 from bs4 import BeautifulSoup
 import requests
 
+def parseItem(item):
+    """parse on item object
+    
+    Arguments:
+        item {Dictionnary} -- a dicitionnary representing the 'parsing request' (url, additionnal info, etc...)
+    """
+
+    return parseUrl(item['url'])
+    
 def parseUrl(url):
     """parses a product page for useful information about that product
     
