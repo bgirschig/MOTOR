@@ -39,17 +39,19 @@ def parse(mail_message):
     # Extract requested urls
     url_regex = r"https?:\/\/www\.[\w.]+(?:\/(?:[\w-]+))+\/?"
     found_urls = re.findall(url_regex, full_body)
-    found_urls = set(found_urls)
 
-    # We return this object, instead of a simple list of urls because the parsed
+    # We return an object, instead of a simple list of urls because the parsed
     # data may include other information in the future. For instance, this
     # allows for adding global settings, or per-item settings without
     # refactoring anything
-    return {
-        'items': [
-            {'url': found_urls}
-        ]
+    output = {
+        'items': []
     }
+
+    for url in found_urls:
+        output['items'].append({'url': url})
+
+    return output
 
 def stringify(mail_message):
     """returns a human-readable string representing the given mail_message
