@@ -30,8 +30,10 @@ class MailRequestHandler(InboundMailHandler):
 
         # Retrieve data from mail text
         data = mailParser.parse(mail_message)
+        
         # Scrape found 'requests' for render infos
         productInfos = [productParser.parseItem(item) for item in data['items']]
+        
         # Send recap email: parsed info, paring errors, etc...
         send_recap_mail(productInfos, mail_message.sender)
 

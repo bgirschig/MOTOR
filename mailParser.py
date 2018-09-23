@@ -1,5 +1,23 @@
 import re
 import logging
+from datetime import datetime
+from datetime import date
+
+def pre_validate(mail_message):
+    """Validations that can be performed before parsing mail body (eg. email is
+    valid, message is not too old, etc...)
+    
+    Arguments:
+        mail_message {MailMessage} -- The mail message, as received by the InboundMailHandler
+    """
+
+    # TODO: Implement this. Throw errors when not valid
+
+    # message age
+    # date_reg = r"\w{2,4},\s(\d{2})\s(\w{2,4})\s(\d{4})\s(\d{2}):(\d{2}):(\d{2})"
+    
+    # sender is an authorized email
+    # Note: one client should be able to register multiple emails as authorized
 
 def parse(mail_message):
     """parses email body for render requests
@@ -11,6 +29,8 @@ def parse(mail_message):
         Dictionnary -- The parsed data
     """
 
+    pre_validate(mail_message)
+
     # extract full body
     full_body = ''
     for _encoding, body in mail_message.bodies('text/plain'):
@@ -18,7 +38,7 @@ def parse(mail_message):
 
     # Extract requested urls
     url_regex = r"https?:\/\/www\.[\w.]+(?:\/(?:[\w-]+))+\/?"
-    found_urls = re.findall(url_regex, full_body);
+    found_urls = re.findall(url_regex, full_body)
     found_urls = set(found_urls)
 
     # We return this object, instead of a simple list of urls because the parsed
