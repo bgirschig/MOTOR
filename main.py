@@ -1,6 +1,7 @@
 import logging
 import mailParser
 import productParser
+import MotorRequest
 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.api import mail
@@ -36,6 +37,12 @@ class MailRequestHandler(InboundMailHandler):
         
         # Send recap email: parsed info, parsing errors, etc...
         send_recap_mail(productInfos, mail_message.sender)
+
+        # create request
+        request = MotorRequest('none', mail_message.sender, {})
+
+        # send request
+        # request.send()
 
 def send_recap_mail(data, address):
     template = jinja.get_template('request_confirm_mail.html')
