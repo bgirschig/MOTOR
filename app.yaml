@@ -1,0 +1,18 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /.*
+  script: main.app
+- url: /_ah/mail/.+
+  script: main.app
+
+inbound_services:
+- mail
+
+libraries:
+- name: ssl
+  version: latest
+- name: jinja2
+  version: latest

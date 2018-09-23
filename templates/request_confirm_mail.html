@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+        body {
+            margin: auto;
+            max-width: 600px;
+        }
+        .label {
+            margin-right: 10px;
+            min-width: 100px;
+            display: inline-block;
+            font-weight: bold;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 5px;
+        }
+        img {
+            height: 60px;
+            border: thin solid black;
+        }
+        .flag {
+            border: thin solid black;
+            font-size: 0.7em;
+            padding: 3px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Render request received</h1>
+    <p>
+        Hello!
+    </p>
+    <p>
+        Your render request has been received and processed.<br>
+        The render will start shortly
+    </p>
+    <p>
+        Please find below a sythesis of the information we extracted for your request.
+    </p>
+    
+    {% for product in products %}
+    <hr>
+    <ul>
+        <li><span class='label'>title</span><span>{{product.title}}</span></li>
+        <li><span class='label'>description</span><span>{{product.description}}</span></li>
+        <li><span class='label'>ref</span><span>{{product.ref}}</span></li>
+        <li><span class='label'>price</span><span>{{product.price}}</span></li>
+        <li>
+            <span class='label'>flags</span>
+            {% for flag in product.flags %}
+            <span class="flag">{{flag}}</span>
+            {% endfor %}
+        </li>
+        <li>
+            <span class='label'>images</span>
+            {% for image in product.images %}
+            <img src="{{image}}" alt="">
+            {% endfor %}
+        </li>
+        <li>
+            <span class='label'>variants</span>
+            {% for variant in product.variants %}
+            <img src="{{variant}}" alt="">
+            {% endfor %}
+        </li>
+    </ul>
+    {% endfor %}
+    
+</body>
+</html>
