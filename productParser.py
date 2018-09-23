@@ -45,10 +45,10 @@ def parse(html_doc):
 
     # combine all elements in a single object
     output = {
-        'title': soup.find(class_='product-details__title').string,
-        'description': soup.find(class_='product-details__description').string,
-        'ref': soup.find(class_='product-details__reference').string,
-        'price': soup.find(class_='product-details__price').string,
+        'title': soup.find(class_='product-details__title').string.strip(),
+        'description': soup.find(class_='product-details__description').string.strip(),
+        'ref': soup.find(class_='product-details__reference').string.strip(),
+        'price': soup.find(class_='product-details__price').string.strip(),
         'flags': flags,
         'variants': variants,
         'images': images

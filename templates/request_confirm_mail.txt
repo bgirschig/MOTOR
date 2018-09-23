@@ -1,0 +1,20 @@
+Hello!
+
+Your render request has been received and processed.<br>
+The render will start shortly
+
+Please find below a sythesis of the information we extracted for your request.
+
+{% for product in products %}
+---------------
+title: {{product.title}}
+description: {{product.description}}
+ref: {{product.ref}}
+price: {{product.price}}
+flags: {% for flag in product.flags %}
+    {{flag}}{% endfor %}
+images: {% for image in product.images %}
+    {{image}}{% endfor %}
+variants: {% for variant in product.variants %}
+    {{variant}}{% endfor %}
+{% endfor %}

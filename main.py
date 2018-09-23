@@ -1,7 +1,7 @@
 import logging
 import mailParser
 import productParser
-import MotorRequest
+from MotorRequest import MotorRequest
 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.api import mail
@@ -45,15 +45,20 @@ class MailRequestHandler(InboundMailHandler):
         # request.send()
 
 def send_recap_mail(data, address):
-    template = jinja.get_template('request_confirm_mail.html')
-    mailContent = template.render({'products': data})
+    html_template = jinja.get_template('request_confirm_mail.html')
+    mail_content_html = html_template.render({'products': data})
+    text_template = jinja.get_template('request_confirm_mail.txt')
+    mail_content_text = text_template.render({'products': data})
 
-    mail.send_mail(
+    message = mail.EmailMessage(
         sender=SELF_EMAIL,
         to=address,
         subject='Your render request',
-        body=mailContent,
     )
+    message.html = mail_content_html
+    message.body = mail_content_text
+
+    # message.send()
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
