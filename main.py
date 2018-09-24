@@ -14,6 +14,9 @@ from os import path
 SELF_EMAIL = "render@kairos-motor.appspotmail.com"
 TEMPLATES_PATH = path.join(path.dirname(__file__), 'templates')
 
+# TODO: use cloud endpoints for managing user limits, monitoring, etc...
+# TODO: move render nodes to gcloud compute engine
+
 jinja = jinja2.Environment(
     loader=jinja2.FileSystemLoader(TEMPLATES_PATH),
     extensions=['jinja2.ext.autoescape'],
