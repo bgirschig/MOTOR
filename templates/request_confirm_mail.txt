@@ -5,16 +5,17 @@ The render will start shortly
 
 Please find below a sythesis of the information we extracted for your request.
 
-{% for product in products %}
+{% for request in requests %}
 ---------------
-title: {{product.title}}
-description: {{product.description}}
-ref: {{product.ref}}
-price: {{product.price}}
-flags: {% for flag in product.flags %}
+request id: {{request.id}}
+title: {{request.data.title}}
+description: {{request.data.description}}
+ref: {{request.data.ref}}
+price: {{request.data.price}}
+flags: {% for flag in request.data.flags %}
     {{flag}}{% endfor %}
-images: {% for image in product.images %}
+images: {% for image in request.data.images %}
     {{image}}{% endfor %}
-variants: {% for variant in product.variants %}
+variants: {% for variant in request.data.variants %}
     {{variant}}{% endfor %}
 {% endfor %}

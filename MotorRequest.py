@@ -3,6 +3,7 @@ from time import time
 import hashlib
 from random import randrange
 import logging
+import requests
 
 
 class MotorRequest:
@@ -41,5 +42,29 @@ class MotorRequest:
         
         return json.dumps(obj)
 
+    def task(self):
+        return taskqueue.Task(payload=self.toString(), method='PULL')
+    
     def send(self):
-        raise NotImplementedError()
+        print 'send', self.id
+        data = {
+            "template": "chanel_test",
+            "compName": "main",
+            "id": self.id,
+            "resources": [
+                {"target": "main_image.jpg", "source": self.data['images'][0]},
+                {"target": "data.json", "data": {
+                    'title': self.data['title'],
+                    'description': self.data['description'],
+                    'ref': self.data['ref'],
+                    'price': self.data['price'],
+                }}
+            ],
+            "encoders": [
+                {"presetName": "smol_vid", "filename": "video_a"},
+            ]
+        }
+        
+        r = requests.post('http://40.89.138.229:8081/render', json=data)
+        print r
+        return r.text

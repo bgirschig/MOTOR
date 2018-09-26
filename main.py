@@ -36,22 +36,23 @@ class MailRequestHandler(InboundMailHandler):
         data = mailParser.parse(mail_message)
         
         # Scrape found 'requests' for render infos
-        productInfos = [productParser.parseItem(item) for item in data['items']]
+        items = [productParser.parseItem(item) for item in data['items']]
         
-        # Send recap email: parsed info, parsing errors, etc...
-        send_recap_mail(productInfos, mail_message.sender)
-
         # create request
-        request = MotorRequest('none', mail_message.sender, {})
+        requests = [MotorRequest(mail_message.sender, mail_message.sender, item) for item in items]
 
-        # send request
-        # request.send()
+        # Send recap email: parsed info, parsing errors, etc...
+        send_recap_mail(requests, mail_message.sender)
+        
+        for request in requests:
+            request.send()
 
-def send_recap_mail(data, address):
+def send_recap_mail(requests, address):
+    logging.info('send_recap_mail')
     html_template = jinja.get_template('request_confirm_mail.html')
-    mail_content_html = html_template.render({'products': data})
+    mail_content_html = html_template.render({'requests': requests})
     text_template = jinja.get_template('request_confirm_mail.txt')
-    mail_content_text = text_template.render({'products': data})
+    mail_content_text = text_template.render({'requests': requests})
 
     message = mail.EmailMessage(
         sender=SELF_EMAIL,
@@ -61,7 +62,7 @@ def send_recap_mail(data, address):
     message.html = mail_content_html
     message.body = mail_content_text
 
-    # message.send()
+    message.send()
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
