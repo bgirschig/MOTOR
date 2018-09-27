@@ -17,7 +17,6 @@ const aerender = isWin ? config.ae_render : config.ae_render_osx;
 async function handle_request(request) {
     console.log('[step] start')
     let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request);
-
     let losslessFile = path.join(outputDir, 'lossless');
     let compName = request.compName || DEFAULT_COMP_NAME;
 
@@ -133,12 +132,39 @@ async function prepareRender (request) {
     // get every resource in the render dir
     for (let ressourceItem of request.resources) {
         const filePath = path.join(resourcesPath, ressourceItem.target);
+        
+        // Read the current template content, before creating the write stream
+        let templatecontent = '';
+        if (await fs.exists(filePath)) {
+            templatecontent = await fs.readFile(filePath);
+        }
+        
+        // TODO: create this at the last minute, to avoid keeping the
+        // templatecontent in such a large scope, and not overwriting files that
+        // will not be changed by the request
         const file = fs.createWriteStream(filePath);
 
         if ('data' in ressourceItem) {
             let data;
             if(typeof ressourceItem.data == 'object') {
-                data = JSON.stringify(ressourceItem.data);
+                // Here, we need a trick to avoid after effects's usesless, yet
+                // blocking popup: 'the structure of the data file has changed'.
+                // New keys can't be added, even the order of the keys needs to
+                // be respected.
+                // For that, we load the data file that was saved with the
+                // template (so it must have the expected 'structure') and
+                // replace the values with the request's when they match.
+                // This technique prevents unknown keys from being added and
+                // also preserves the original order.
+                // TODO: Make this more generic (eg. in current state, it
+                // wouldn't work with downloaded ressouces)
+                objectdata = JSON.parse(templatecontent.toString('utf8'));
+                for (key in objectdata) {
+                    if (key in ressourceItem.data){
+                        objectdata[key] = ressourceItem.data[key];
+                    }
+                }
+                data = JSON.stringify(objectdata);
             } else if (typeof ressourceItem.data == 'string') {
                 data = ressourceItem.data;
             }
