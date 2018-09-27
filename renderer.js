@@ -80,6 +80,7 @@ function render (templateFilePath, losslessFile, compName) {
         '-continueOnMissingFootage',
     ];
 
+    console.log(aerender, args.join(' '));
     var ae = spawn(aerender, args);
     ae.stdin.end();
     ae.on('error', function (err) {
