@@ -77,8 +77,8 @@ function render (templateFilePath, losslessFile, compName) {
         '-project', templateFilePath,
         '-comp', compName,
         '-output', losslessFile,
-    ]
-    console.log(config.ae_render, args.join(' '));
+        '-continueOnMissingFootage',
+    ];
 
     var ae = spawn(config.ae_render, args);
     ae.stdin.end();
