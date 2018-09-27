@@ -11,6 +11,9 @@ const TEMPLATES_DIR = path.resolve('./templates');
 const DEFAULT_COMP_NAME = 'main';
 const REMOTE_OUTPUT_DIR = 'render_outputs'
 
+const isWin = process.platform === "win32";
+const aerender = isWin ? config.ae_render : config.ae_render_osx;
+
 async function handle_request(request) {
     console.log('[step] start')
     let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request);
