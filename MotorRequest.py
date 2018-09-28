@@ -3,8 +3,10 @@ from time import time
 import hashlib
 from random import randrange
 import logging
-import requests
+from google.appengine.api import urlfetch
 
+ACCEPT_STATUS_CODES = [200, 201, 202]
+RENDERER_API_URL = 'http://40.89.131.172:8081/render'
 
 class MotorRequest:
     """Generic request to the Motor service"""
@@ -43,7 +45,7 @@ class MotorRequest:
         return json.dumps(obj)
 
     def send(self):
-        data = {
+        request_data = {
             "template": "chanel_test",
             "compName": "main",
             "id": self.id,
@@ -55,6 +57,27 @@ class MotorRequest:
                 {"presetName": "smol_vid", "filename": "video_a"},
             ]
         }
-        
-        r = requests.post('http://40.89.138.229:8081/render', json=data)
-        return r.text
+
+        try:
+            headers = {'Content-Type': 'application/json'}
+            result = urlfetch.fetch(
+                url=RENDERER_API_URL,
+                method=urlfetch.POST,
+                payload=json.dumps(request_data),
+                headers=headers
+            )
+            logging.info({
+                'tag': 'render-request',
+                'message': 'successfully placed request',
+                'request_data': request_data,
+            })
+            if result.status_code not in ACCEPT_STATUS_CODES:
+                raise Exception('failed request: [{}] {}'.format(
+                    result.status_code, result.content))
+        except Exception as err:
+            logging.error({
+                'tag': 'render-request',
+                'type': type(err).__name__,
+                'message': err.message,
+                'request_data': request_data,
+            })
