@@ -42,11 +42,7 @@ class MotorRequest:
         
         return json.dumps(obj)
 
-    def task(self):
-        return taskqueue.Task(payload=self.toString(), method='PULL')
-    
     def send(self):
-        print 'send', self.id
         data = {
             "template": "chanel_test",
             "compName": "main",
@@ -66,5 +62,4 @@ class MotorRequest:
         }
         
         r = requests.post('http://40.89.138.229:8081/render', json=data)
-        print r
         return r.text

@@ -46,6 +46,7 @@ class MailRequestHandler(InboundMailHandler):
         
         for request in requests:
             request.send()
+        logging.info('[main handler] done')
 
 def send_recap_mail(requests, address):
     logging.info('send_recap_mail')
