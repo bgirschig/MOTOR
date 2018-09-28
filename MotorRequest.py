@@ -49,12 +49,7 @@ class MotorRequest:
             "id": self.id,
             "resources": [
                 {"target": "main_image.jpg", "source": self.data['images'][0]},
-                {"target": "data.json", "data": {
-                    'title': self.data['title'],
-                    'description': self.data['description'],
-                    'ref': self.data['ref'],
-                    'price': self.data['price'],
-                }}
+                {"target": "data.json", 'data': self.data},
             ],
             "encoders": [
                 {"presetName": "smol_vid", "filename": "video_a"},
