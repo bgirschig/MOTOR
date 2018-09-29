@@ -16,7 +16,6 @@ app.post('/render', (req, res) => {
     let request = {};
     Object.assign(request, requestDefaults);
     Object.assign(request, req.body);
-    request.id = hash(JSON.stringify(req.body) + Date.now())
 
     renderer(request)
 
