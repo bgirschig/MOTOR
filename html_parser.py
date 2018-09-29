@@ -30,8 +30,7 @@ def scrapeUrl(url, scraper_def):
     except Exception as err:
         errorObj = {
             'error': str(err),
-            'baseUrl': url,
-            'status_code': resp.status_code,
+            'baseUrl': url
         }
         logging.warning(errorObj)
         return errorObj
