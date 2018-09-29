@@ -37,7 +37,7 @@ def parse(mail_message):
         full_body += body.decode()
 
     # Extract requested urls
-    url_regex = r"https?:\/\/www\.[\w.]+(?:\/(?:[\w-]+))*\/?"
+    url_regex = r"https?:\/\/(?:www\.)?[\w.]+(?:\/(?:[\w-]+))*\/?(?:\?.+)?"
     found_urls = re.findall(url_regex, full_body)
 
     # We return an object, instead of a simple list of urls because the parsed
