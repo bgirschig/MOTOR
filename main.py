@@ -69,6 +69,9 @@ class MailRequestHandler(InboundMailHandler):
         logging.info('[main handler] done')
 
 def send_request(request_data):
+    # skip 'errored' requests
+    if 'error' in request_data: return
+
     try:
         logging.info({'tag': 'render-request', 'message': 'sending request',
             'request_data': request_data})
