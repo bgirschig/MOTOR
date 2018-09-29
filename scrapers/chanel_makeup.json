@@ -1,0 +1,27 @@
+{
+    "template": "chanel_test",
+    "resources": [
+        {"target": "main_image.jpg", "scrape_src": ".product-details__media img & src,first,required"},
+        {"target": "variant#.jpg", "scrape_src": ".tint-image & src"},
+        {"target": "data.json", "data": {
+            "scrape_price": ".product-details__price & text,first,required",
+            "scrape_title": ".product-details__title & text,first,required",
+            "scrape_description": ".product-details__description & text,first",
+            "scrape_reference": ".product-details__reference & text,first",
+            "scrape_flags": ".product-details__flags .flag & text"
+        }}
+    ],
+    "encoders": [
+        {"presetName": "smol_vid", "filename": "video_a"}
+    ],
+    "logging_data": {
+        "note": "this contains duplicate data, meant to make the logging of information easier.",
+        "scrape_price": ".product-details__price & text,first,required",
+        "scrape_title": ".product-details__title & text,first,required",
+        "scrape_description": ".product-details__description & text,first",
+        "scrape_reference": ".product-details__reference & text,first",
+        "scrape_flags": ".product-details__flags .flag & text",
+        "scrape_main_image": ".product-details__media img & src,first,required",
+        "scrape_variants": ".tint-image & src"
+    }
+}

@@ -1,0 +1,28 @@
+Hello!
+
+Your render request has been received and processed.<br>
+The render will start shortly
+
+Please find below a sythesis of the information we extracted for your request.
+
+{% for request in requests %}
+---------------
+{% if 'error' in request %}
+Sorry, an error has occured for this link:
+request id: {{request.id}}
+error: {{request.error|safe}}
+url: {{request.baseUrl|safe}}
+{% else %}
+request id: {{request.id}}
+title: {{request.logging_data.title}}
+description: {{request.logging_data.description}}
+ref: {{request.logging_data.ref}}
+price: {{request.logging_data.price}}
+flags: {% for flag in request.logging_data.flags %}
+    {{flag}}{% endfor %}
+images: {% for image in request.logging_data.images %}
+    {{image}}{% endfor %}
+variants: {% for variant in request.logging_data.variants %}
+    {{variant}}{% endfor %}
+{% endif %}
+{% endfor %}
