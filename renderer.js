@@ -135,14 +135,6 @@ async function prepareRender (request) {
         
         // Read the current template content, before creating the write stream
         let templatecontent = '';
-        if (await fs.exists(filePath)) {
-            templatecontent = await fs.readFile(filePath);
-        }
-        
-        // TODO: create this at the last minute, to avoid keeping the
-        // templatecontent in such a large scope, and not overwriting files that
-        // will not be changed by the request
-        const file = fs.createWriteStream(filePath);
 
         if ('data' in ressourceItem) {
             let data;
@@ -158,6 +150,8 @@ async function prepareRender (request) {
                 // also preserves the original order.
                 // TODO: Make this more generic (eg. in current state, it
                 // wouldn't work with downloaded ressouces)
+                let templatecontent;
+                if (await fs.exists(filePath)) templatecontent = await fs.readFile(filePath);
                 objectdata = JSON.parse(templatecontent.toString('utf8'));
                 for (key in objectdata) {
                     if (key in ressourceItem.data){
@@ -168,26 +162,41 @@ async function prepareRender (request) {
             } else if (typeof ressourceItem.data == 'string') {
                 data = ressourceItem.data;
             }
+            const file = fs.createWriteStream(filePath);
             file.write(data);
             file.close();
-        } else if ('source' in ressourceItem) {
-            let resourcePromise = fetch(ressourceItem.source)
-            .then(resp=>{
-                return new Promise((resolve, reject)=>{
-                    resp.body.pipe(file);
-                    resp.body.on('end', resolve);
-                    resp.body.on('error', reject);
-                })
-                .then(()=>file.close())
-            })
-            .catch(console.error);
-
-            promises.push(resourcePromise);
+        } else if ('src' in ressourceItem) {
+            promises.push(fetchResource(ressourceItem.src, filePath));
         }
     }
     await Promise.all(promises);
 
     return {templateFilePath, outputDir, renderProjectDir}
+}
+
+async function fetchResource(urls, targetPath) {
+    if(Array.isArray(urls)) {
+        promises = urls.map((url, idx)=>{
+            let targetPathIndexed = targetPath.replace('#', idx);
+            return fetchResource(url, targetPathIndexed)
+        });
+        return Promise.all(promises)
+    } else {
+        let url = urls;
+        response = await fetch(url);
+        if (response.status !== 200) {
+            throw new Error('failed asset request: ' + url);
+        } else {
+            const file = fs.createWriteStream(targetPath);
+            let promise = new Promise((resolve, reject)=>{
+                response.body.pipe(file);
+                response.body.on('end', resolve);
+                response.body.on('error', reject);
+            })
+            await promise
+            file.close()
+        }
+    }
 }
 
 module.exports = handle_request
