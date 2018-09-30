@@ -114,7 +114,7 @@ async function prepareRender (request) {
     const templateSourceDir = path.join(TEMPLATES_DIR, request.template);
     // no extension: aerender selects it depending on output module
     const outputDir = path.join(renderProjectDir, 'output');
-    const templateFilePath = path.join(renderProjectDir, 'template.aepx');
+    const templateFilePath = path.join(renderProjectDir, 'template.aep');
 
     // Create folders
     promises.push(fs.ensureDir(RENDER_TEMPS_DIR));
