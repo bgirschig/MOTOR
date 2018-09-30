@@ -1,3 +1,6 @@
+// TODO: a more sensible approach to error handling: don't try to encode if
+// render failed, don't try to upload if encode failed, etc...
+
 const path = require("path");
 const fs = require('fs-extra')
 const fetch = require('node-fetch');
@@ -14,33 +17,32 @@ const REMOTE_OUTPUT_DIR = 'render_outputs'
 const isWin = process.platform === "win32";
 const aerender = isWin ? config.ae_render : config.ae_render_osx;
 
-async function handle_request(request) {
-    console.log('[step] start')
-    let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request);
+async function handle_request(request, logger) {
+    let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request, logger);
     let losslessFile = path.join(outputDir, 'lossless');
     let compName = request.compName || DEFAULT_COMP_NAME;
 
     try {
-        await render(templateFilePath, losslessFile, compName, renderProjectDir);
+        await render(templateFilePath, losslessFile, compName, logger);
+        logger.info('render successful');
         
         // find the lossless file (after effects replaces the extension
         // depending on the environment, so we can't know)
         losslessFiles = await findFiles(outputDir, 'lossless');
-        if (losslessFiles.length === 0) throw new Error('render file (lossless.*) not found');
-        if (losslessFiles.length > 1) throw new Error('more than one render file (lossless.*) found');
+        if (losslessFiles.length === 0) throw new Error('rendered file not found');
+        if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
         losslessFile = losslessFiles[0];
 
-        await runEncoders(losslessFile, request.encoders);
+        await runEncoders(losslessFile, request.encoders, logger);
         await fs.remove(losslessFile);
-        await upload_renders(outputDir, request.id);
+        await upload_renders(outputDir, request.id, logger);
     } catch (err) {
-        console.error('error:', err);
+        logger.error(err);
     }
 
-    console.log('[step] cleanup');
     await fs.remove(renderProjectDir);
 
-    console.log('[step] done');
+    logger.info('done');
 }
 
 /**
@@ -54,24 +56,20 @@ async function findFiles(dir, name) {
     return matched;
 }
 
-async function upload_renders (outputDir, target) {
-    console.log('[step] upload')
+async function upload_renders (outputDir, target, logger) {
     const client = new ftp.Client();
     try {
         await client.access(config.ftp);
-        console.log('[step][ftp] connected')
         await client.cd(REMOTE_OUTPUT_DIR);
-        console.log('[step][ftp] cd\'d to dir')
         await client.uploadDir(outputDir, target);
-        console.log('[step][ftp] uploaded')
+        logger.info('upload successful');
     } catch(err) {
-        console.log(err);
+        logger.error(err, 'upload failed');
     }
     client.close();
 }
 
-function render (templateFilePath, losslessFile, compName) {
-    console.log('[step] render')
+function render (templateFilePath, losslessFile, compName, logger) {
     let args = [
         '-project', templateFilePath,
         '-comp', compName,
@@ -79,17 +77,26 @@ function render (templateFilePath, losslessFile, compName) {
         '-continueOnMissingFootage',
     ];
 
-    console.log(aerender, args.join(' '));
+    logger.info({
+        command:{
+            'command-path': aerender,
+            'args': args,
+        }
+    }, `spawn process: ${aerender + args.join(' ')}`);
+
+    // TODO: add a timeout
+    // TODO: bundle multiple stdout lines together before sending, or only
+    // debug-log them
     var ae = spawn(aerender, args);
     ae.stdin.end();
     ae.on('error', function (err) {
-        console.log('error:', err);
+        logger.error(err, String(err));
     });
     ae.stdout.on('data', data => {
-        console.log('stdout: ' + data.toString().trim());
+        logger.info('stdout: ' + data.toString().trim());
     })
     ae.stderr.on('data', function (data) {
-        console.log('stderr:', data.toString());
+        logger.error('stderr:', data.toString());
     });
     return new Promise((resolve, reject)=>{
         ae.on('close', function (code) {
@@ -104,8 +111,8 @@ function render (templateFilePath, losslessFile, compName) {
  * all the ressources needed for a render according to the request.
  * @param {renderRequest} request - the object that defines the request
  */
-async function prepareRender (request) {
-    console.log('[step] prepare render')
+async function prepareRender (request, logger) {
+    logger.info('prepare render');
 
     let promises = [];
 

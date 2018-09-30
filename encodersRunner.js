@@ -4,13 +4,12 @@ const config = require("./config");
 
 var ame = new ame_webservice.AdobeMediaEncoder(config.media_encoder);
 
-function runEncoders (source, encoders) {
+function runEncoders (source, encoders, logger) {
+    logger.info('encoding')
     return ame.start()
     .then(()=>{
         let jobPromises = [];
         let dirname = path.dirname(source);
-
-        console.log('output to ', dirname);
 
         // for each encoder, enqueue a job, and add its promise to the list
         for (let encoder of encoders) {
@@ -26,10 +25,11 @@ function runEncoders (source, encoders) {
                 });
 
                 job.on('progress', ()=>{
-                    console.log('progress: ', job.statusText, job.progress, job.statusDetail);
+                    logger.info({}, `${job.statusText} ${job.progress} ${job.statusDetail}`)
                 });
 
                 job.on('ended', ()=>{
+                    logger.info({}, `${job.status}, ${job.lastStatusResponse}`)
                     resolve(job.status, job.lastStatusResponse);
                 });
             }));
