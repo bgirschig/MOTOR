@@ -146,11 +146,14 @@ async function prepareRender (request) {
                 // replace the values with the request's when they match.
                 // This technique prevents unknown keys from being added and
                 // also preserves the original order.
-                // TODO: Make this more generic (eg. in current state, it
+                // TODO: Make this more generic (eg. as-is, it
                 // wouldn't work with downloaded ressouces)
                 let templatecontent;
-                if (await fs.exists(filePath)) templatecontent = await fs.readFile(filePath);
-                objectdata = JSON.parse(templatecontent.toString('utf8'));
+                let objectdata = {};
+                if (await fs.exists(filePath)) {
+                    templatecontent = await fs.readFile(filePath);
+                    objectdata = JSON.parse(templatecontent.toString('utf8'));
+                }
                 for (key in objectdata) {
                     if (key in ressourceItem.data){
                         objectdata[key] = ressourceItem.data[key];
