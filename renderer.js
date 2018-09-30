@@ -111,7 +111,6 @@ async function prepareRender (request) {
 
     // Define some paths
     const renderProjectDir = path.join(RENDER_TEMPS_DIR, request.id);
-    const resourcesPath = path.join(renderProjectDir, "(Metrage)");
     const templateSourceDir = path.join(TEMPLATES_DIR, request.template);
     // no extension: aerender selects it depending on output module
     const outputDir = path.join(renderProjectDir, 'output');
@@ -120,7 +119,6 @@ async function prepareRender (request) {
     // Create folders
     promises.push(fs.ensureDir(RENDER_TEMPS_DIR));
     promises.push(fs.ensureDir(renderProjectDir));
-    promises.push(fs.ensureDir(resourcesPath));
     promises.push(fs.ensureDir(outputDir));
 
     await Promise.all(promises);
@@ -131,7 +129,7 @@ async function prepareRender (request) {
 
     // get every resource in the render dir
     for (let ressourceItem of request.resources) {
-        const filePath = path.join(resourcesPath, ressourceItem.target);
+        const filePath = path.join(renderProjectDir, ressourceItem.target);
         
         // Read the current template content, before creating the write stream
         let templatecontent = '';
@@ -162,9 +160,7 @@ async function prepareRender (request) {
             } else if (typeof ressourceItem.data == 'string') {
                 data = ressourceItem.data;
             }
-            const file = fs.createWriteStream(filePath);
-            file.write(data);
-            file.close();
+            fs.outputFile(filePath, data);
         } else if ('src' in ressourceItem) {
             promises.push(fetchResource(ressourceItem.src, filePath));
         }
@@ -183,6 +179,8 @@ async function fetchResource(urls, targetPath) {
         return Promise.all(promises)
     } else {
         let url = urls;
+
+        await fs.ensureFile(targetPath)
         response = await fetch(url);
         if (response.status !== 200) {
             throw new Error('failed asset request: ' + url);
