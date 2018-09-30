@@ -85,6 +85,17 @@ def scrapeItem(tree, selector):
     elif 'last' in modifiers:
         output = output[-1]
 
+    if 'string' in modifiers:
+        if type(output) is str or type(output) is unicode:
+            pass
+        elif type(output) is list:
+            output = '&sep;'.join(output)
+        elif type(output) is object or type(output) is dict:
+            # The deserializer in after effects can't handle 'complex' types
+            raise ValueError("html parser can't serialize complex values like objects or dicts")
+        else:
+            raise ValueError("html parser can't serialize values of type "+type(output))
+
     return output
 
 if __name__ == '__main__':
