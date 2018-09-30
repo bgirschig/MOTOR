@@ -1,14 +1,13 @@
 {
-    "template": "chanel_test",
+    "template": "chanel",
+    "compName": "product-01",
     "resources": [
-        {"target": "main_image.jpg", "scrape_src": ".product-details__media img & src,first,required"},
-        {"target": "variant#.jpg", "scrape_src": ".tint-image & src"},
-        {"target": "data.json", "data": {
-            "scrape_price": ".product-details__price & text,first,required",
+        {"target": "(Footage)/01-footage/chanel_variant00#.jpg", "scrape_src": ".tint-image & src"},
+        {"target": "(Footage)/01-footage/chanel_product00#.jpg", "scrape_src": ".product-details__media img & src,required"},
+        {"target": "(Footage)/data.json", "data": {
             "scrape_title": ".product-details__title & text,first,required",
-            "scrape_description": ".product-details__description & text,first",
-            "scrape_reference": ".product-details__reference & text,first",
-            "scrape_flags": ".product-details__flags .flag & text"
+            "scrape_subtitle": ".product-details__description & text,first",
+            "scrape_shades": ".tint-image + span & text,string,required"
         }}
     ],
     "encoders": [
