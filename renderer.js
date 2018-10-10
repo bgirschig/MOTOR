@@ -17,32 +17,60 @@ const REMOTE_OUTPUT_DIR = 'render_outputs'
 const isWin = process.platform === "win32";
 const aerender = isWin ? config.ae_render : config.ae_render_osx;
 
+let busy = false;
+const renderQueue = [];
+
+function addToQueue (request, logger) {
+    renderQueue.push({
+        request: request,
+        logger: logger,
+    });
+    processQueue();    
+}
+
+function processQueue() {
+    if(busy) return;
+    let task = renderQueue.shift();
+    if(!task) return;
+    handle_request(task.request, task.logger);
+}
+
 async function handle_request(request, logger) {
-    let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request, logger);
-    let losslessFile = path.join(outputDir, 'lossless');
-    let compName = request.compName || DEFAULT_COMP_NAME;
+    if(busy) return;
+    busy = true;
 
     try {
-        await render(templateFilePath, losslessFile, compName, logger);
-        logger.info('render successful');
+        let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request, logger);
+        let losslessFile = path.join(outputDir, 'lossless');
+        let compName = request.compName || DEFAULT_COMP_NAME;
         
-        // find the lossless file (after effects replaces the extension
-        // depending on the environment, so we can't know)
-        losslessFiles = await findFiles(outputDir, 'lossless');
-        if (losslessFiles.length === 0) throw new Error('rendered file not found');
-        if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
-        losslessFile = losslessFiles[0];
-
-        await runEncoders(losslessFile, request.encoders, logger);
-        await fs.remove(losslessFile);
-        await upload_renders(outputDir, request.id, logger);
+        try {
+            await render(templateFilePath, losslessFile, compName, logger);
+            logger.info('render successful');
+            
+            // find the lossless file (after effects replaces the extension
+            // depending on the environment, so we can't know)
+            losslessFiles = await findFiles(outputDir, 'lossless');
+            if (losslessFiles.length === 0) throw new Error('rendered file not found');
+            if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
+            losslessFile = losslessFiles[0];
+    
+            await runEncoders(losslessFile, request.encoders, logger);
+            await fs.remove(losslessFile);
+            await upload_renders(outputDir, request.id, logger);
+        } catch (err) {
+            logger.error(err);
+        }
+        logger.info('cleanup');
+        await fs.remove(renderProjectDir);
+        
+        logger.info('done');
     } catch (err) {
         logger.error(err);
     }
 
-    await fs.remove(renderProjectDir);
-
-    logger.info('done');
+    busy = false;
+    processQueue();
 }
 
 /**
@@ -207,4 +235,4 @@ async function fetchResource(urls, targetPath) {
     }
 }
 
-module.exports = handle_request
+module.exports = addToQueue
