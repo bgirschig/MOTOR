@@ -43,7 +43,7 @@ logger.middleware = function(req, res, next) {
     tracer: tracer,
     parent: req.originalUrl,
   })
-  
+
   // TODO: add other information (requester IP, etc...)
   req.logger.info({
     body: req.body,
