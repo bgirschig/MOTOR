@@ -15,7 +15,6 @@
     ],
     "logging_data": {
         "note": "this contains duplicate data, meant to make the logging of information easier.",
-        "scrape_price": ".product-details__price & text,first,required",
         "scrape_title": ".product-details__title & text,first,required",
         "scrape_description": ".product-details__description & text,first",
         "scrape_reference": ".product-details__reference & text,first",

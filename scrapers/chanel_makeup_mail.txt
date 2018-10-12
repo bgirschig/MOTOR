@@ -17,7 +17,6 @@ request id: {{request.id}}
 title: {{request.logging_data.title}}
 description: {{request.logging_data.description}}
 ref: {{request.logging_data.ref}}
-price: {{request.logging_data.price}}
 flags: {% for flag in request.logging_data.flags %}
     {{flag}}{% endfor %}
 images: {% for image in request.logging_data.images %}
