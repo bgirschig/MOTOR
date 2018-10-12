@@ -19,8 +19,8 @@ def scrapeUrl(url, scraper_def):
         resp = requests.get(url)
 
         if resp.status_code not in ACCEPT_STATUS_CODES:
-            raise Exception('failed request: [{}] {}'.format(
-                resp.status_code, resp.content))
+            raise Exception('failed request: [{}]'.format(
+                resp.status_code))
 
         pageContent = resp.text
         tree = BeautifulSoup(pageContent, 'html.parser') # TODO: check if lxml *parser* works and is faster
