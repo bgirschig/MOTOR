@@ -60,6 +60,9 @@ class MailRequestHandler(InboundMailHandler):
 
             requests.append(request_datas)
 
+        # print json.dumps(requests, indent=2)
+        # return
+
         # Send recap email: parsed info, parsing errors, etc...
         send_recap_mail(requests, mail_message.sender)
         
@@ -102,7 +105,7 @@ def send_request(request_data):
 
 def send_recap_mail(requests, address):
     logging.info('send_recap_mail')
-
+    
     html_template = jinja.get_template('chanel_makeup_mail.html')
     mail_content_html = html_template.render({'requests': requests})
     

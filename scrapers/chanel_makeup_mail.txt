@@ -1,9 +1,9 @@
 Hello!
 
-Your render request has been received and processed.<br>
-The render will start shortly
+Your render requests have been received and processed.<br>
+They will be rendered shortly
 
-Please find below a sythesis of the information we extracted for your request.
+Please find below a sythesis of the information we extracted for each request.
 
 {% for request in requests %}
 ---------------

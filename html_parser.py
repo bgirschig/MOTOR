@@ -137,4 +137,4 @@ if __name__ == '__main__':
     # url = 'https://www.chanel.com/us/makeup/p/170816/vitalumiere-aqua-ultra-light-skin-perfecting-sunscreen-makeup-spf-15/'
     url = 'http://www.google.com'
 
-    print json.dumps(parsePage(url, parser_def), indent=3)
+    print json.dumps(scrapeUrl(url, scraper_def), indent=3)
