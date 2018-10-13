@@ -4,6 +4,7 @@ import html_parser
 
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 from google.appengine.api import mail
+from google.appengine.api.modules.modules import get_current_module_name
 
 import webapp2
 import jinja2
@@ -32,8 +33,9 @@ jinja = jinja2.Environment(
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
+        service_name = get_current_module_name()
         self.response.headers['Content-Type'] = 'text/plain'
-        self.response.write('Hello world')
+        self.response.write(service_name + ' ok')
 
 class MailRequestHandler(InboundMailHandler):
     def receive(self, mail_message):
