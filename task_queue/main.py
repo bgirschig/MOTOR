@@ -151,10 +151,11 @@ class LeaseHandler(webapp2.RequestHandler):
       # set tasks whose lease has expired back to pending status
       if task.lease_timeout and datetime.datetime.now() > task.lease_timeout:
         task.status = Status.PENDING
+        task.put()
       # pending tasks that don't have any more attempts have failed
       if task.status == Status.PENDING and task.attempt_count >= task.max_attempts:
         task.status = Status.FAILED
-
+        task.put()
 
     # Now that the statuses are updated, we can rely on them to filter pending
     # tasks
@@ -173,12 +174,12 @@ class LeaseHandler(webapp2.RequestHandler):
       task.status = Status.RUNNING
       task.attempt_count += 1
 
+      task.put()
+
       self.response.write(json.dumps(task.toDict()))
     else:
       # There are no tasks to be leased
       self.response.status = 204
-
-    ndb.put_multi(tasks)
 
 class NotFoundHandler(webapp2.RequestHandler):
   def get(self, *args):
