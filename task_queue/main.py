@@ -140,7 +140,8 @@ class LeaseHandler(webapp2.RequestHandler):
 
     # filter tags
     if "tags" in self.request.GET:
-      query = query.filter(Task.tags.IN(self.request.GET["tags"]))
+      tags = self.request.GET["tags"].split(',')
+      query = query.filter(Task.tags.IN(tags))
 
     # run the query
     query = query.order(Task.create_time)

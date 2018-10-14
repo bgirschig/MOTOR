@@ -26,7 +26,7 @@ class Task(ndb.Model):
       'create_time': time.mktime(self.create_time.timetuple()),
       'payload': self.payload,
       'response': self.response,
-      'tags': self.tags,
+      'tags': ','.join(self.tags),
       'api_version': self.api_version,
       'key': self.key.urlsafe(),
       'attempt_count': self.attempt_count,
