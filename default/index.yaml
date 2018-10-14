@@ -14,3 +14,9 @@ indexes:
   properties:
   - name: status
   - name: create_time
+
+- kind: Task
+  properties:
+  - name: status
+  - name: tags
+  - name: create_time
