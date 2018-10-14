@@ -12,5 +12,7 @@
         "port": 8080,
         "hostname": "localhost"
     },
-    "apiPort": 8081
+    "apiPort": 8181,
+    "queue_ping_rate": 30,
+    "queue_api_url": "http://localhost:8081"
 }

@@ -7,70 +7,209 @@ const fetch = require('node-fetch');
 const ftp = require('basic-ftp');
 const spawn = require('child_process').spawn;
 const runEncoders = require('./encodersRunner');
-const config = require("./config");
+const global_config = require("./config");
+const logger = require('./logging');
 
-const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
-const TEMPLATES_DIR = path.resolve('./templates');
-const DEFAULT_COMP_NAME = 'main';
-const REMOTE_OUTPUT_DIR = 'render_outputs'
+// const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
+// const TEMPLATES_DIR = path.resolve('./templates');
+// const DEFAULT_COMP_NAME = 'main';
+// const REMOTE_OUTPUT_DIR = 'render_outputs'
 
-const isWin = process.platform === "win32";
-const aerender = isWin ? config.ae_render : config.ae_render_osx;
+// const isWin = process.platform === "win32";
+// const aerender = isWin ? config.ae_render : config.ae_render_osx;
 
-let busy = false;
-const renderQueue = [];
+// let busy = false;
 
-function addToQueue (request, logger) {
-    renderQueue.push({
-        request: request,
-        logger: logger,
-    });
-    processQueue();    
-}
-
-function processQueue() {
-    if(busy) return;
-    let task = renderQueue.shift();
-    if(!task) return;
-    handle_request(task.request, task.logger);
-}
-
-async function handle_request(request, logger) {
-    if(busy) return;
-    busy = true;
-
-    try {
-        let {templateFilePath, outputDir, renderProjectDir} = await prepareRender(request, logger);
-        let losslessFile = path.join(outputDir, 'lossless');
-        let compName = request.compName || DEFAULT_COMP_NAME;
+class Renderer {
+    constructor(config={}) {
+        config = Object.assign({
+            "render_temps_dir": path.resolve('./render_tmps'),
+            "templates_dir": path.resolve('./templates'),
+            "default_comp_name": 'main',
+            "remote_output_dir": 'render_outputs',
+        }, config);
+        this.config = config;
         
+        let isWin = process.platform === "win32";
+        this.aerender_cmd = isWin ? global_config.ae_render : global_config.ae_render_osx;
+        
+        this.busy = false;
+    }
+
+    async render(request, logger) {
+        const renderProjectDir = path.join(this.config.render_temps_dir, request.id);
+        const templateFilePath = path.join(renderProjectDir, 'template.aep');
         try {
-            await render(templateFilePath, losslessFile, compName, logger);
-            logger.info('render successful');
+            if(this.busy) {
+                logger.warn('rejected render: the renderer was busy');
+                return;
+            }
+            this.busy = true;
+            this.logger = logger;
+
+            let outputDir = await this.prepareRender(request, renderProjectDir);
+            let losslessFile = path.join(outputDir, 'lossless');
+            let compName = request.compName || this.config.default_comp_name;
+            
+            await this.ae_render(templateFilePath, losslessFile, compName);
+            this.logger.info('render successful');
             
             // find the lossless file (after effects replaces the extension
             // depending on the environment, so we can't know)
-            losslessFiles = await findFiles(outputDir, 'lossless');
+            let losslessFiles = await findFiles(outputDir, 'lossless');
             if (losslessFiles.length === 0) throw new Error('rendered file not found');
             if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
             losslessFile = losslessFiles[0];
     
-            await runEncoders(losslessFile, request.encoders, logger);
+            await runEncoders(losslessFile, request.encoders, this.logger);
             await fs.remove(losslessFile);
-            await upload_renders(outputDir, request.id, logger);
+            let realCount = await cout_files(outputDir);
+            let expectedCount = request.encoders.length;
+            if (realCount != expectedCount){
+                throw new Error(`Expected ${expectedCount}, found ${realCount} encoded files`);
+            }
+            await this.upload_renders(outputDir, request.id);
+            
+            this.logger.info('cleanup');
+            await fs.remove(renderProjectDir);
+            
+            this.logger.info('done');
+            this.busy = false;
         } catch (err) {
-            logger.error(err);
+            this.logger.info('cleanup after error');
+            await fs.remove(renderProjectDir);
+            
+            this.busy = false;
+            throw err;
         }
-        logger.info('cleanup');
-        await fs.remove(renderProjectDir);
-        
-        logger.info('done');
-    } catch (err) {
-        logger.error(err);
+
     }
 
-    busy = false;
-    processQueue();
+    async ae_render(templateFilePath, losslessFile, compName) {
+        let args = [
+            '-project', templateFilePath,
+            '-comp', compName,
+            '-output', losslessFile,
+            '-continueOnMissingFootage',
+        ];
+    
+        this.logger.info({
+            command:{
+                'command-path': this.aerender_cmd,
+                'args': args,
+            }
+        }, `spawn process: ${this.aerender_cmd + args.join(' ')}`);
+    
+        // TODO: add a timeout
+        // TODO: bundle multiple stdout lines together before sending, or only
+        // debug-log them
+        var ae = spawn(this.aerender_cmd, args);
+        ae.stdin.end();
+        ae.on('error', function (err) {
+            this.logger.error(err, String(err));
+        });
+        ae.stdout.on('data', data => {
+            this.logger.info('stdout: ' + data.toString().trim());
+        })
+        ae.stderr.on('data', function (data) {
+            this.logger.error('stderr:', data.toString());
+        });
+        return new Promise((resolve, reject)=>{
+            ae.on('close', function (code) {
+                if (code == 0) resolve();
+                else reject('aerender command failed');
+            });
+        })
+    }
+
+    /**
+     * Prepares the render "environment" for a given request: downloads or copies
+     * all the ressources needed for a render according to the request.
+     * @param {renderRequest} request - the object that defines the request
+     */
+    async prepareRender (request, renderProjectDir) {
+        this.logger.info('prepare render');
+
+        let promises = [];
+
+        // Define some paths
+        const templateSourceDir = path.join(this.config.templates_dir, request.template);
+        // no extension: aerender selects it depending on output module
+        const outputDir = path.join(renderProjectDir, 'output');
+
+        // Create folders
+        promises.push(fs.ensureDir(this.config.render_temps_dir));
+        promises.push(fs.ensureDir(renderProjectDir));
+        promises.push(fs.ensureDir(outputDir));
+
+        await Promise.all(promises);
+        promises = [];
+
+        // Copy template files
+        await fs.copy(templateSourceDir, renderProjectDir);
+
+        // get every resource in the render dir
+        for (let ressourceItem of request.resources) {
+            const filePath = path.join(renderProjectDir, ressourceItem.target);
+
+            if ('data' in ressourceItem) {
+                let data;
+                if(typeof ressourceItem.data == 'object') {
+                    // Here, we need a trick to avoid after effects's usesless, yet
+                    // blocking popup: 'the structure of the data file has changed'.
+                    // New keys can't be added, even the order of the keys needs to
+                    // be respected.
+                    // For that, we load the data file that was saved with the
+                    // template (so it must have the expected 'structure') and
+                    // replace the values with the request's when they match.
+                    // This technique prevents unknown keys from being added and
+                    // also preserves the original order.
+                    // TODO: Make this more generic (eg. as-is, it
+                    // wouldn't work with downloaded ressouces)
+                    let templatecontent;
+                    let objectdata = {};
+                    if (await fs.exists(filePath)) {
+                        templatecontent = await fs.readFile(filePath);
+                        objectdata = JSON.parse(templatecontent.toString('utf8'));
+                    }
+                    for (let key in objectdata) {
+                        if (key in ressourceItem.data){
+                            objectdata[key] = ressourceItem.data[key];
+                        }
+                    }
+                    data = JSON.stringify(objectdata);
+                } else if (typeof ressourceItem.data == 'string') {
+                    data = ressourceItem.data;
+                }
+                fs.outputFile(filePath, data);
+            } else if ('src' in ressourceItem) {
+                promises.push(fetchResource(ressourceItem.src, filePath));
+            }
+        }
+        await Promise.all(promises);
+
+        return outputDir;
+    }
+
+    async upload_renders(outputDir, target) {
+        const client = new ftp.Client();
+        try {
+            await client.access(global_config.ftp);
+            await client.cd(this.config.remote_output_dir);
+            await client.uploadDir(outputDir, target);
+            this.logger.info('upload successful');
+            client.close();
+        } catch(err) {
+            client.close();
+            throw new Error('upload failed' + err)
+        }
+    }
+}
+
+async function cout_files(dir) {
+    return fs.readdir(dir).then((files)=>{
+        return files.length;
+    })
 }
 
 /**
@@ -82,130 +221,6 @@ async function findFiles(dir, name) {
     matched = files.filter(file => path.parse(file).name === name);
     matched = matched.map(file=>path.join(dir, file));
     return matched;
-}
-
-async function upload_renders (outputDir, target, logger) {
-    const client = new ftp.Client();
-    try {
-        await client.access(config.ftp);
-        await client.cd(REMOTE_OUTPUT_DIR);
-        await client.uploadDir(outputDir, target);
-        logger.info('upload successful');
-    } catch(err) {
-        logger.error(err, 'upload failed');
-    }
-    client.close();
-}
-
-function render (templateFilePath, losslessFile, compName, logger) {
-    let args = [
-        '-project', templateFilePath,
-        '-comp', compName,
-        '-output', losslessFile,
-        '-continueOnMissingFootage',
-    ];
-
-    logger.info({
-        command:{
-            'command-path': aerender,
-            'args': args,
-        }
-    }, `spawn process: ${aerender + args.join(' ')}`);
-
-    // TODO: add a timeout
-    // TODO: bundle multiple stdout lines together before sending, or only
-    // debug-log them
-    var ae = spawn(aerender, args);
-    ae.stdin.end();
-    ae.on('error', function (err) {
-        logger.error(err, String(err));
-    });
-    ae.stdout.on('data', data => {
-        logger.info('stdout: ' + data.toString().trim());
-    })
-    ae.stderr.on('data', function (data) {
-        logger.error('stderr:', data.toString());
-    });
-    return new Promise((resolve, reject)=>{
-        ae.on('close', function (code) {
-            if (code == 0) resolve();
-            else reject('aerender command failed');
-        });
-    })
-}
-
-/**
- * Prepares the render "environment" for a given request: downloads or copies
- * all the ressources needed for a render according to the request.
- * @param {renderRequest} request - the object that defines the request
- */
-async function prepareRender (request, logger) {
-    logger.info('prepare render');
-
-    let promises = [];
-
-    // Define some paths
-    const renderProjectDir = path.join(RENDER_TEMPS_DIR, request.id);
-    const templateSourceDir = path.join(TEMPLATES_DIR, request.template);
-    // no extension: aerender selects it depending on output module
-    const outputDir = path.join(renderProjectDir, 'output');
-    const templateFilePath = path.join(renderProjectDir, 'template.aep');
-
-    // Create folders
-    promises.push(fs.ensureDir(RENDER_TEMPS_DIR));
-    promises.push(fs.ensureDir(renderProjectDir));
-    promises.push(fs.ensureDir(outputDir));
-
-    await Promise.all(promises);
-    promises = [];
-
-    // Copy template files
-    await fs.copy(templateSourceDir, renderProjectDir);
-
-    // get every resource in the render dir
-    for (let ressourceItem of request.resources) {
-        const filePath = path.join(renderProjectDir, ressourceItem.target);
-        
-        // Read the current template content, before creating the write stream
-        let templatecontent = '';
-
-        if ('data' in ressourceItem) {
-            let data;
-            if(typeof ressourceItem.data == 'object') {
-                // Here, we need a trick to avoid after effects's usesless, yet
-                // blocking popup: 'the structure of the data file has changed'.
-                // New keys can't be added, even the order of the keys needs to
-                // be respected.
-                // For that, we load the data file that was saved with the
-                // template (so it must have the expected 'structure') and
-                // replace the values with the request's when they match.
-                // This technique prevents unknown keys from being added and
-                // also preserves the original order.
-                // TODO: Make this more generic (eg. as-is, it
-                // wouldn't work with downloaded ressouces)
-                let templatecontent;
-                let objectdata = {};
-                if (await fs.exists(filePath)) {
-                    templatecontent = await fs.readFile(filePath);
-                    objectdata = JSON.parse(templatecontent.toString('utf8'));
-                }
-                for (key in objectdata) {
-                    if (key in ressourceItem.data){
-                        objectdata[key] = ressourceItem.data[key];
-                    }
-                }
-                data = JSON.stringify(objectdata);
-            } else if (typeof ressourceItem.data == 'string') {
-                data = ressourceItem.data;
-            }
-            fs.outputFile(filePath, data);
-        } else if ('src' in ressourceItem) {
-            promises.push(fetchResource(ressourceItem.src, filePath));
-        }
-    }
-    await Promise.all(promises);
-
-    return {templateFilePath, outputDir, renderProjectDir}
 }
 
 async function fetchResource(urls, targetPath) {
@@ -235,4 +250,4 @@ async function fetchResource(urls, targetPath) {
     }
 }
 
-module.exports = addToQueue
+module.exports = Renderer;

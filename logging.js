@@ -18,7 +18,7 @@ const stdoutSerializer = {
     let logColor = colorMap[loglevel];
     console.log('[%s][%s][%s]: %s',
       rec.time.toISOString(),
-      rec.tracer || '',
+      rec.tracker || '',
       colors.bold(colors[logColor](loglevel)),
       rec.msg,
     );
@@ -36,11 +36,11 @@ const logger = bunyan.createLogger({
 });
 
 logger.middleware = function(req, res, next) {
-  let tracer = req.body.tracer || req.body.id || uuidv1();
-  req.body.tracer = tracer;
+  let tracker = req.body.tracker || req.body.id || uuidv1();
+  req.body.tracker = tracker;
 
   req.logger = logger.child({
-    tracer: tracer,
+    tracker: tracker,
     parent: req.originalUrl,
   })
 
