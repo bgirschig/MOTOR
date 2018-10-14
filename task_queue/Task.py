@@ -12,8 +12,8 @@ class Status(messages.Enum):
 class Task(ndb.Model):
   status = msgprop.EnumProperty(Status, default=Status.PENDING)
   create_time = ndb.DateTimeProperty(auto_now_add=True)
-  payload = ndb.JsonProperty(default={'info': 'empty payload'})
-  response = ndb.JsonProperty(default={'info': 'empty reponse'})
+  payload = ndb.JsonProperty(default={})
+  response = ndb.JsonProperty(default={})
   tags = ndb.StringProperty(repeated=True)
   api_version = ndb.StringProperty(default="0.0.1")
   attempt_count = ndb.IntegerProperty(default=0)
@@ -25,6 +25,7 @@ class Task(ndb.Model):
       'status': self.status.name,
       'create_time': time.mktime(self.create_time.timetuple()),
       'payload': self.payload,
+      'response': self.response,
       'tags': self.tags,
       'api_version': self.api_version,
       'key': self.key.urlsafe(),
@@ -32,5 +33,4 @@ class Task(ndb.Model):
       'max_attempts': self.max_attempts,
       'lease_timeout': time.mktime(self.lease_timeout.timetuple()) if self.lease_timeout else None,
       'lease_timeout_str': str(self.lease_timeout),
-      'now': str(datetime.datetime.now()),
     }
