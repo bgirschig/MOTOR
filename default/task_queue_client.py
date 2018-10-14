@@ -76,7 +76,7 @@ class Queue():
       max_attempts {int} -- how many attempts should the task be tried before being declared 'FAILED'
     
     Returns:
-      {dict} -- The created Task object
+      {dict} -- The created Task object's key
     """
 
     request_data = {}
@@ -91,7 +91,7 @@ class Queue():
     )
     if response.status_code != 200:
       handleError(response)
-    return json.loads(response.content)
+    return json.loads(response.content)["task_key"]
   
   def updateTask(self, task_id, status=None, response=None):
     """ Updates a task's properties

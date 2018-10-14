@@ -60,65 +60,30 @@ class MailRequestHandler(InboundMailHandler):
             request_datas = html_parser.scrapeUrl(
                 mail_request_item['url'], './scrapers/chanel_makeup.json')
             
-            # determine request id
-            string_req = json.dumps(request_datas) + str(randrange(0, 10**14))
-            request_datas['id'] = hashlib.md5(string_req).hexdigest()
-            
             # append other request informations
             request_datas["clientID"] = mail_message.sender
             request_datas["requesterID"] = mail_message.sender
             request_datas["timestamp"] = time()
 
             requests.append(request_datas)
-
-        # print json.dumps(requests, indent=2)
-        # return
+        
+        for request in requests:
+            key = queue.appendTask(request, ["render"], 4)
+            request["id"] = key
 
         # Send recap email: parsed info, parsing errors, etc...
         send_recap_mail(requests, mail_message.sender)
-        
-        for request in requests:
-            send_request(request)
 
         logging.info('[main handler] done')
-
-def send_request(request_data):
-    # skip 'errored' requests
-    if 'error' in request_data: return
-
-    try:
-        logging.info({'tag': 'render-request', 'message': 'sending request',
-            'request_data': request_data})
-
-        result = urlfetch.fetch(
-            url=RENDERER_API_URL,
-            method=urlfetch.POST,
-            payload=json.dumps(request_data),
-            headers={
-                'Content-Type': 'application/json'
-            }
-        )
-        if result.status_code not in ACCEPT_STATUS_CODES:
-            raise Exception('failed request: [{}] {}'.format(
-                result.status_code, result.content))
-        
-    except Exception as err:
-        logging.error({
-            'tag': 'render-request',
-            'type': type(err).__name__,
-            'message': err.message,
-            'request_id': request_data['id'],
-            'request_data': request_data,
-        })
 
 def send_recap_mail(requests, address):
     logging.info('send_recap_mail')
     
-    html_template = jinja.get_template('chanel_makeup_mail.html')
-    mail_content_html = html_template.render({'requests': requests})
-    
     text_template = jinja.get_template('chanel_makeup_mail.txt')
-    mail_content_text = text_template.render({'requests': requests})
+    mail_content_text = text_template.render({"requests":requests})
+
+    html_template = jinja.get_template('chanel_makeup_mail.html')
+    mail_content_html = html_template.render({"requests":requests})
 
     message = mail.EmailMessage(
         sender=SELF_EMAIL,
