@@ -14,6 +14,8 @@ SERVICE_NAME = get_current_module_name()
 
 current_major, current_minor, current_patch = extractVersions(API_VERSION)
 
+ndb.get_context().set_cache_policy(lambda key: False)
+
 class TestRoute(webapp2.RequestHandler):
     def get(self):
       self.response.headers['Content-Type'] = 'text/html'
