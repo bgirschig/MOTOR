@@ -15,13 +15,14 @@ from time import time
 import hashlib
 from random import randrange
 from google.appengine.api import urlfetch
-
+from task_queue_client import Queue
 
 SELF_EMAIL = "render@kairos-motor.appspotmail.com"
 ACCEPT_STATUS_CODES = [200, 201, 202]
 RENDERER_API_URL = 'http://40.89.131.172:8081/render'
 # RENDERER_API_URL = 'http://localhost:8081/render'
 TEMPLATES_PATH = path.join(path.dirname(__file__), 'scrapers')
+TASK_QUEUE_API_URL = 'http://localhost:8082'
 
 # TODO: use cloud endpoints for managing user limits, monitoring, etc...
 # TODO: move render nodes to gcloud compute engine
@@ -31,11 +32,19 @@ jinja = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
+queue = Queue(TASK_QUEUE_API_URL)
+
 class MainPage(webapp2.RequestHandler):
     def get(self):
         service_name = get_current_module_name()
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write(service_name + ' ok')
+
+class QueueTest(webapp2.RequestHandler):
+    def get(self):
+        tasks = queue.list()
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(json.dumps(tasks))
 
 class MailRequestHandler(InboundMailHandler):
     def receive(self, mail_message):
@@ -93,9 +102,6 @@ def send_request(request_data):
             raise Exception('failed request: [{}] {}'.format(
                 result.status_code, result.content))
         
-        logging.info({ 'tag': 'render-request', 'message': 'sent request',
-            'request_id': request_data['id']})
-        
     except Exception as err:
         logging.error({
             'tag': 'render-request',
@@ -126,5 +132,6 @@ def send_recap_mail(requests, address):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
+    ('/queue-test', QueueTest),
     MailRequestHandler.mapping(),
 ], debug=True)

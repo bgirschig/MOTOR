@@ -1,3 +1,4 @@
 lib/
 env/
 *.pyc
+gcloud_credentials.json
