@@ -19,17 +19,17 @@ class TestRoute(webapp2.RequestHandler):
       self.response.headers['Content-Type'] = 'text/html'
       self.response.write(SERVICE_NAME + ' ok')
 
-class ApiItem(webapp2.RequestHandler):
-  def get(self, item_key):
+class TaskHandler(webapp2.RequestHandler):
+  def get(self, task_key):
     self.response.headers['Content-Type'] = 'application/json'
     try:
-      item = ndb.Key(urlsafe=item_key).get()
+      task = ndb.Key(urlsafe=task_key).get()
     except ProtocolBufferDecodeError:
-      self.response.write(json.dumps({ "error": "invalid key"}))
+      errorHandler(None, "invalid key", self)
     except TypeError:
-      self.response.write(json.dumps({ "error": "invalid key"}))
+      errorHandler(None, "invalid key", self)
     else:
-      self.response.write(json.dumps(item.toDict()))
+      self.response.write(json.dumps(task.toDict()))
     
   def post(self):
     self.response.headers['Content-Type'] = 'application/json'
@@ -41,21 +41,21 @@ class ApiItem(webapp2.RequestHandler):
       return
 
     try:
-      item = Task(payload=request_data.get("payload", {}),
+      task = Task(payload=request_data.get("payload", {}),
           tags=request_data.get("tags", []),
           max_attempts=request_data.get("max_attempts", 5))
     except BadValueError as error:
       errorHandler(error, "Invalid request. check logs for more details", self)
       return
 
-    key = item.put()
+    key = task.put()
     self.response.status = 200
     self.response.write(json.dumps({
-      'message': 'successfully inserted item into queue',
-      'item_key': key.urlsafe(),
+      'message': 'successfully inserted task into queue',
+      'task_key': key.urlsafe(),
     }))
   
-  def put(self, item_key):
+  def put(self, task_key):
     try:
       request_data = json.loads(self.request.body)
     except ValueError as error:
@@ -67,7 +67,7 @@ class ApiItem(webapp2.RequestHandler):
     # The properties defined in the put request data
     request_properties = set(request_data.keys())
     # properties not in PUBLIC_PROPERTIES are invalid
-    invalid_properties = PUBLIC_PROPERTIES ^ request_properties
+    invalid_properties = [prop for prop in request_properties if prop not in PUBLIC_PROPERTIES]
 
     if len(invalid_properties) > 0:
       msg = "Invalid request: some properties are not editable, or do not exist: [{}]".format(', '.join(invalid_properties))
@@ -75,42 +75,50 @@ class ApiItem(webapp2.RequestHandler):
       return
 
     try:
-      item = ndb.Key(urlsafe=item_key).get()
+      task = ndb.Key(urlsafe=task_key).get()
     except ProtocolBufferDecodeError:
-      self.response.write(json.dumps({ "error": "invalid key"}))
+      errorHandler(None, "invalid key", self)
+      return
     except TypeError:
-      self.response.write(json.dumps({ "error": "invalid key"}))
-    else:
-      if "status" in request_data:
-        item.status = Status(request_data["status"])
-      if "response" in request_data:
-        item.response = request_data["response"]
+      errorHandler(None, "invalid key", self)
+      return
 
-      item.put()
+    if not task:
+      errorHandler(None, "task not found", self, 404)
+      return
 
-      self.response.status = 200
-      self.response.write('ok')
+    if "status" in request_data:
+      try:
+        task.status = Status(request_data["status"])
+      except TypeError as error:
+        errorHandler(None, error.message, self)
+        return
+    
+    if "response" in request_data:
+      task.response = request_data["response"]
 
-    print item_key, request_data
+    task.put()
 
-    pass
+    self.response.status = 200
+    self.response.write(json.dumps(task.toDict()))
 
-class ApiList(webapp2.RequestHandler):
+
+class ListHandler(webapp2.RequestHandler):
   def get(self):
-    items = Task \
+    tasks = Task \
         .query() \
         .order(Task.create_time) \
         .fetch()
-    items = [item.toDict() for item in items if hasValidApiVersion(item)]
+    tasks = [task.toDict() for task in tasks if hasValidApiVersion(task)]
 
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps(items))
+    self.response.write(json.dumps(tasks))
 
 # TODO: Make this transactionnal. If a lease request is received before the
 # previous request has updated its task status, the same task will be returned
 # This works for now, as we have a small number of render nodes, making
 # collisions unlikely
-class ApiLease(webapp2.RequestHandler):
+class LeaseHandler(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = 'application/json'
 
@@ -167,20 +175,20 @@ class ApiLease(webapp2.RequestHandler):
     ndb.put_multi(tasks)
 
 
-def errorHandler(error, message, handler):
+def errorHandler(error, message, handler, code=500):
   if error: logging.error(error)
-  handler.response.status = 400
+  handler.response.status = code
   handler.response.write(json.dumps({'error': message}))
 
-""" returns true if the item is compatible with the current api version """
-def hasValidApiVersion(item):
-  item_major, item_minor, _ = extractVersions(item.api_version)
-  return item_major == current_major and item_minor <= current_minor
+""" returns true if the task is compatible with the current api version """
+def hasValidApiVersion(task):
+  task_major, task_minor, _ = extractVersions(task.api_version)
+  return task_major == current_major and task_minor <= current_minor
 
 app = webapp2.WSGIApplication([
     ('/', TestRoute),
-    webapp2.Route(r'/item/<item_key>', handler=ApiItem, methods=['GET', 'PUT']),
-    webapp2.Route(r'/item', handler=ApiItem, methods=['POST']),
-    ('/list', ApiList),
-    ('/lease', ApiLease),
+    webapp2.Route(r'/task/<task_key>', handler=TaskHandler, methods=['GET', 'PUT']),
+    webapp2.Route(r'/task', handler=TaskHandler, methods=['POST']),
+    ('/list', ListHandler),
+    ('/lease', LeaseHandler),
 ], debug=True)
