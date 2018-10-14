@@ -26,20 +26,24 @@ class TaskHandler(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'application/json'
     try:
       task = ndb.Key(urlsafe=task_key).get()
+      if not task:
+        raise IndexError('no task found with this id: '+task_key)
     except ProtocolBufferDecodeError:
-      errorHandler(None, "invalid key", self)
+      handleError(None, "invalid key", self)
     except TypeError:
-      errorHandler(None, "invalid key", self)
+      handleError(None, "invalid key", self)
+    except IndexError as error:
+      handleError(None, error.message, self)
     else:
       self.response.write(json.dumps(task.toDict()))
-    
+
   def post(self):
     self.response.headers['Content-Type'] = 'application/json'
 
     try:
       request_data = json.loads(self.request.body)
     except ValueError as error:
-      errorHandler(error, "Json parsing error. Check logs for more details", self)
+      handleError(error, "Json parsing error. Check logs for more details", self)
       return
 
     try:
@@ -47,7 +51,7 @@ class TaskHandler(webapp2.RequestHandler):
           tags=request_data.get("tags", []),
           max_attempts=request_data.get("max_attempts", 5))
     except BadValueError as error:
-      errorHandler(error, "Invalid request. check logs for more details", self)
+      handleError(error, "Invalid request. check logs for more details", self)
       return
 
     key = task.put()
@@ -61,7 +65,7 @@ class TaskHandler(webapp2.RequestHandler):
     try:
       request_data = json.loads(self.request.body)
     except ValueError as error:
-      errorHandler(error, "Json parsing error. Check logs for more details", self)
+      handleError(error, "Json parsing error. Check logs for more details", self)
       return
 
     # The task properties that can be accessed by this method.
@@ -73,34 +77,34 @@ class TaskHandler(webapp2.RequestHandler):
 
     if len(invalid_properties) > 0:
       msg = "Invalid request: some properties are not editable, or do not exist: [{}]".format(', '.join(invalid_properties))
-      errorHandler(None, msg, self)
+      handleError(None, msg, self)
       return
 
     try:
       task = ndb.Key(urlsafe=task_key).get()
     except ProtocolBufferDecodeError:
-      errorHandler(None, "invalid key", self)
+      handleError(None, "invalid key", self)
       return
     except TypeError:
-      errorHandler(None, "invalid key", self)
+      handleError(None, "invalid key", self)
       return
 
     if not task:
-      errorHandler(None, "task not found", self, 404)
+      handleError(None, "task not found", self, 404)
       return
 
     if "status" in request_data:
       try:
         task.status = Status(request_data["status"])
       except TypeError as error:
-        errorHandler(None, error.message, self)
+        handleError(None, error.message, self)
         return
-    
+
     if "response" in request_data:
       task.response = request_data["response"]
 
     task.put()
-
+    
     self.response.status = 200
     self.response.write(json.dumps(task.toDict()))
 
@@ -176,8 +180,28 @@ class LeaseHandler(webapp2.RequestHandler):
 
     ndb.put_multi(tasks)
 
+class NotFoundHandler(webapp2.RequestHandler):
+  def get(self, *args):
+    self.errorResponse()
+  def post(self, *args):
+    self.errorResponse()
+  def head(self, *args):
+    self.errorResponse()
+  def options(self, *args):
+    self.errorResponse()
+  def put(self, *args):
+    self.errorResponse()
+  def delete(self, *args):
+    self.errorResponse()
+  def trace(self, *args):
+    self.errorResponse()
+  
+  def errorResponse(self):
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.status = 404
+    self.response.write(json.dumps({"error": "path or method not found"}))
 
-def errorHandler(error, message, handler, code=500):
+def handleError(error, message, handler, code=500):
   if error: logging.error(error)
   handler.response.status = code
   handler.response.write(json.dumps({'error': message}))
@@ -193,4 +217,5 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/task', handler=TaskHandler, methods=['POST']),
     ('/list', ListHandler),
     ('/lease', LeaseHandler),
+    webapp2.Route(r'/<:.*>', handler=NotFoundHandler),
 ], debug=True)
