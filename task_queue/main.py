@@ -8,13 +8,51 @@ from google.appengine.ext import ndb
 from google.net.proto.ProtocolBuffer import ProtocolBufferDecodeError
 from google.appengine.ext.db import BadValueError
 import datetime
+import jinja2
 
 API_VERSION = "0.0.1"
 SERVICE_NAME = get_current_module_name()
+TEMPLATES_PATH = "templates"
 
 current_major, current_minor, current_patch = extractVersions(API_VERSION)
-
 ndb.get_context().set_cache_policy(lambda key: False)
+
+jinja = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(TEMPLATES_PATH),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
+
+def datetime_filter(timestamp):
+  if not timestamp: return "N/A"
+
+  data_format = '%Y-%m-%d %H:%M:%S'
+  return datetime.datetime.utcfromtimestamp(timestamp).strftime(data_format)
+def timeout_filter(timestamp, status="PENDING"):
+  if status is not "RUNNING": return "--"
+  if not timestamp: return "N/A"
+  
+  # print type (datetime.datetime.now() - datetime.datetime(1970, 1, 1))
+  now = datetime.datetime.now()
+  itemTime = datetime.datetime.fromtimestamp(timestamp)
+  
+  if now > itemTime: return "expired"
+
+  delta = itemTime - now
+  days = delta.days
+  hours, rem = divmod(delta.seconds, 3600)
+  minutes, seconds = divmod(rem, 60)
+  
+  out = ""
+  if days: out += str(days) + "d "
+  if hours: out += str(hours) + "h"
+  if minutes: out += str(minutes) + "m"
+  if seconds: out += str(seconds) + "s"
+  
+  return out.strip()
+
+jinja.filters['datetime'] = datetime_filter
+jinja.filters['timeout'] = timeout_filter
+
 
 class TestRoute(webapp2.RequestHandler):
     def get(self):
@@ -60,7 +98,7 @@ class TaskHandler(webapp2.RequestHandler):
       'message': 'successfully inserted task into queue',
       'task_key': key.urlsafe(),
     }))
-  
+
   def put(self, task_key):
     try:
       request_data = json.loads(self.request.body)
@@ -95,7 +133,10 @@ class TaskHandler(webapp2.RequestHandler):
 
     if "status" in request_data:
       try:
-        task.status = Status(request_data["status"])
+        if(task.status in [Status.PENDING, Status.RUNNING]):
+          # We only allow setting status on 'active' tasks
+          # (either pending or running). To re-start a task, duplicate it
+          task.status = Status(request_data["status"])
       except TypeError as error:
         handleError(None, error.message, self)
         return
@@ -108,6 +149,62 @@ class TaskHandler(webapp2.RequestHandler):
     self.response.status = 200
     self.response.write(json.dumps(task.toDict()))
 
+class DuplicateHandler(webapp2.RequestHandler):
+  def get(self, task_key):
+    self.response.headers['Content-Type'] = 'application/json'
+    try:
+      task = ndb.Key(urlsafe=task_key).get()
+      if not task:
+        raise IndexError('no task found with this id: '+task_key)
+    except ProtocolBufferDecodeError:
+      handleError(None, "invalid key", self)
+    except TypeError:
+      handleError(None, "invalid key", self)
+    except IndexError as error:
+      handleError(None, error.message, self)
+    else:
+      newTask = Task(
+        payload=task.payload,
+        tags=task.tags,
+        max_attempts=task.max_attempts)
+      newTask.put()
+      self.redirect("/list.html")
+
+class CancelHandler(webapp2.RequestHandler):
+  def get(self, task_key):
+    self.response.headers['Content-Type'] = 'application/json'
+    try:
+      task = ndb.Key(urlsafe=task_key).get()
+      if not task:
+        raise IndexError('no task found with this id: '+task_key)
+    except ProtocolBufferDecodeError:
+      handleError(None, "invalid key", self)
+    except TypeError:
+      handleError(None, "invalid key", self)
+    except IndexError as error:
+      handleError(None, error.message, self)
+    else:
+      task.status = Status.CANCELLED
+      task.put()
+      self.redirect("/list.html")
+  
+class FailHandler(webapp2.RequestHandler):
+  def get(self, task_key):
+    self.response.headers['Content-Type'] = 'application/json'
+    try:
+      task = ndb.Key(urlsafe=task_key).get()
+      if not task:
+        raise IndexError('no task found with this id: '+task_key)
+    except ProtocolBufferDecodeError:
+      handleError(None, "invalid key", self)
+    except TypeError:
+      handleError(None, "invalid key", self)
+    except IndexError as error:
+      handleError(None, error.message, self)
+    else:
+      task.status = Status.PENDING
+      task.put()
+      self.redirect("/list.html")
 
 class ListHandler(webapp2.RequestHandler):
   def get(self):
@@ -119,6 +216,18 @@ class ListHandler(webapp2.RequestHandler):
 
     self.response.headers['Content-Type'] = 'application/json'
     self.response.write(json.dumps(tasks))
+
+class ListView(webapp2.RequestHandler):
+  def get(self):
+    tasks = Task \
+        .query() \
+        .order(Task.create_time) \
+        .fetch()
+    tasks = [task.toDict() for task in tasks if hasValidApiVersion(task)]
+
+    response = jinja.get_template('queue.html').render({"tasks": tasks})
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.write(response)
 
 # TODO: Make this transactionnal. If a lease request is received before the
 # previous request has updated its task status, the same task will be returned
@@ -217,7 +326,11 @@ app = webapp2.WSGIApplication([
     ('/', TestRoute),
     webapp2.Route(r'/task/<task_key>', handler=TaskHandler, methods=['GET', 'PUT']),
     webapp2.Route(r'/task', handler=TaskHandler, methods=['POST']),
+    webapp2.Route(r'/duplicate/<task_key>', handler=DuplicateHandler, methods=['GET']),
+    webapp2.Route(r'/cancel/<task_key>', handler=CancelHandler, methods=['GET']),
+    webapp2.Route(r'/fail/<task_key>', handler=FailHandler, methods=['GET']),
     ('/list', ListHandler),
+    ('/list.html', ListView),
     ('/lease', LeaseHandler),
     webapp2.Route(r'/<:.*>', handler=NotFoundHandler),
 ], debug=True)

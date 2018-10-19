@@ -8,6 +8,7 @@ class Status(messages.Enum):
   RUNNING = 1
   DONE = 2
   FAILED = 3
+  CANCELLED = 4
 
 class Task(ndb.Model):
   status = msgprop.EnumProperty(Status, default=Status.PENDING)

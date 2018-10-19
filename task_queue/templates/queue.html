@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Task Queue</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      font-family: sans-serif;
+    }
+    .task {
+      border-bottom: 1px solid #0004;
+      padding: 5px;
+    }
+    .task:hover {
+      background-color: #0009;
+      color: white;
+    }
+    .task:hover a{
+      color: white;
+    }
+    .task>div {
+      margin-right: 10px;
+      display: inline-block;
+    }
+    .status {
+      padding: 5px;
+      box-sizing: border-box;
+      display: inline-block;
+      color: white;
+      width: 110px;
+      text-align: center;
+    }
+
+    a:visited, a {
+      color: blue;
+    }
+
+    .PENDING { background-color: grey; }
+    .RUNNING { background-color: orange; }
+    .DONE { background-color: green; }
+    .FAILED { background-color: red; }
+    .CANCELLED { background-color: BLACK; }
+
+    .key {
+      width: 410px;
+    }
+    .create_time {
+      width: 150px;
+    }
+    .lease_timeout {
+      width: 60px;
+    }
+    .attempt_count {
+      width: 40px;
+    }
+    .cancelBtn {
+      width: 50px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Queue</h1>
+  {% for task in tasks | reverse %}
+  
+    <div class="task">
+        <div class="status {{task.status}}">{{task.status}}</div>
+        <div class="key"><a href="task/{{task.key}}">{{task.key}}</a></div>
+        <div class="create_time">{{task.create_time|datetime}}</div>
+        <div class="attempt_count">{{task.attempt_count}}/{{task.max_attempts}}</div>
+        <div class="lease_timeout">{{task.lease_timeout|timeout(task.status)}}</div>
+        <div class="logsBtn">
+          <a
+            href="https://console.cloud.google.com/logs/viewer?project=kairos-motor&minLogLevel=0&expandAll=false&resource=global&logName=projects%2Fkairos-motor%2Flogs%2Fbunyan_log&filters=jsonPayload.tracker:{{task.key}}"
+            target="_blank">logs</a>
+        </div>
+        <div class="duplicateBtn"><a href="duplicate/{{task.key}}">duplicate</a></div>
+        <div class="cancelBtn">
+          {% if task.status in ['PENDING', 'RUNNING']%}
+          <a href="cancel/{{task.key}}">cancel</a>
+          {% endif %}
+        </div>
+        <div class="failBtn">
+          {% if task.status == 'RUNNING'%}
+          <a href="fail/{{task.key}}">fail attempt</a>
+          {% endif %}
+        </div>
+
+    </div>
+  {% endfor %}
+</body>
+</html>

@@ -22,7 +22,8 @@ ACCEPT_STATUS_CODES = [200, 201, 202]
 RENDERER_API_URL = 'http://40.89.131.172:8081/render'
 # RENDERER_API_URL = 'http://localhost:8081/render'
 TEMPLATES_PATH = path.join(path.dirname(__file__), 'scrapers')
-TASK_QUEUE_API_URL = 'http://localhost:8081'
+TASK_QUEUE_API_URL = 'https://task-queue-dot-kairos-motor.appspot.com'
+# TASK_QUEUE_API_URL = 'http://localhost:8081'
 
 # TODO: use cloud endpoints for managing user limits, monitoring, etc...
 # TODO: move render nodes to gcloud compute engine
