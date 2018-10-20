@@ -52,7 +52,7 @@ class Renderer {
             let compName = request.compName || this.config.default_comp_name;
             
             await this.ae_render(templateFilePath, losslessFile, compName);
-            this.logger.info('render successful');
+            this.logger.info('ae_render finished');
             
             // find the lossless file (after effects replaces the extension
             // depending on the environment, so we can't know)
@@ -76,13 +76,12 @@ class Renderer {
             this.logger.info('done');
             this.busy = false;
         } catch (err) {
-            this.logger.info('cleanup after error');
+            this.logger.info('cleanup after error: ', err.message);
             await fs.remove(renderProjectDir);
             
             this.busy = false;
             throw err;
         }
-
     }
 
     async ae_render(templateFilePath, losslessFile, compName) {
@@ -105,13 +104,13 @@ class Renderer {
         // debug-log them
         var ae = spawn(this.aerender_cmd, args);
         ae.stdin.end();
-        ae.on('error', function (err) {
+        ae.on('error', (err) => {
             this.logger.error(err, String(err));
         });
         ae.stdout.on('data', data => {
             this.logger.info('stdout: ' + data.toString().trim());
         })
-        ae.stderr.on('data', function (data) {
+        ae.stderr.on('data', (data) => {
             this.logger.error('stderr:', data.toString());
         });
         return new Promise((resolve, reject)=>{
@@ -244,8 +243,8 @@ async function fetchResource(urls, targetPath) {
                 response.body.on('end', resolve);
                 response.body.on('error', reject);
             })
-            await promise
-            file.close()
+            await promise;
+            file.close();
         }
     }
 }

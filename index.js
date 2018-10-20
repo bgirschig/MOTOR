@@ -30,7 +30,7 @@ app.get('/test', (req, res) => {
 
 async function handleTask(task) {
   let request_logger = logger.child({
-    tracker: task.key
+    tracker: task.key,
   })
 
   // pass down the task id to the renderer
@@ -55,9 +55,12 @@ async function checkQueue() {
       task.status = "DONE";
       await queue.updateTask(task);
     } catch (error) {
-      logger.error(error);
+      let request_logger = logger.child({
+        tracker: task.key
+      })
+      request_logger.error(error);
       task.status = "PENDING";
-      task.response = error;
+      task.response = {'error':error.message};
       let updated_task = await queue.updateTask(task);
     }
     checkQueue();
