@@ -229,8 +229,8 @@ class ListView(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(response)
 
-# TODO: Make this transactionnal. If a lease request is received before the
-# previous request has updated its task status, the same task will be returned
+# TODO: Make this transactionnal. Now, If a lease request is received before the
+# previous request has updated its task status, the same task will be returned.
 # This works for now, as we have a small number of render nodes, making
 # collisions unlikely
 class LeaseHandler(webapp2.RequestHandler):
