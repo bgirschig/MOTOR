@@ -128,7 +128,7 @@ if __name__ == '__main__':
             }}
         ],
         "encoders": [
-            {"presetName": "smol_vid", "filename": "video_a"}
+            "-pix_fmt yuv420p video.mp4",
         ]
     }
 

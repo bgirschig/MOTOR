@@ -11,7 +11,7 @@
         }}
     ],
     "encoders": [
-        {"presetName": "smol_vid", "filename": "video_a"}
+        "-pix_fmt yuv420p video.mp4"
     ],
     "logging_data": {
         "note": "this contains duplicate data, meant to make the logging of information easier.",
