@@ -2,6 +2,6 @@
     "compName": "main",
     "resources": [],
     "encoders": [
-        {"presetName": "smol_vid", "filename": "video"}
+        "-pix_fmt yuv420p video.mp4"
     ]
 }
