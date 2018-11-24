@@ -3,17 +3,18 @@ const config = require("./config");
 const spawn = require('child_process').spawn;
 
 function runEncoders (source, encoders, logger) {
+    logger = logger || console;
     logger.info('encoding')
     
     let promises = [];
     let dirname = path.dirname(source);
+    dirname = path.resolve(dirname);
 
     // for each encoder, enqueue a job, and add its promise to the list
     for (let encoder of encoders) {
-        console.log(encoder);
+        logger.info('encoder: ', encoder);
         argString = `-y -i ${source} ${encoder}`
         promises.push(ffmpeg(
-            path.resolve(source),
             argString,
             {cwd:dirname, logger: logger}
         ));
@@ -23,11 +24,14 @@ function runEncoders (source, encoders, logger) {
     return Promise.all(promises);
 }
 
-async function ffmpeg(source, argString, options={}) {
-    options.logger.info(`spawn process: ffmpeg ${argString}`);
-
+async function ffmpeg(argString, options={}) {    
     let args = argString.split(' ');
-    var ffmpeg = spawn('ffmpeg', args, options);
+    options.logger.info(`spawn process: ${process.env.FFMPEG_PATH} ${args.join(' ')}`);
+
+    var ffmpeg = spawn(
+        process.env.FFMPEG_PATH,
+        args,
+        options);
     
     ffmpeg.on('error', (err) => {
         options.logger.error('ffmpeg error:'+err, String(err));
