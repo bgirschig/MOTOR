@@ -66,7 +66,7 @@
   
     <div class="task">
         <div class="status {{task.status}}">{{task.status}}</div>
-        <div class="key"><a href="task/{{task.key}}">{{task.key}}</a></div>
+        <div class="key"><a href="task/{{task.key}}.html">{{task.key}}</a></div>
         <div class="create_time">{{task.create_time|datetime}}</div>
         <div class="attempt_count">{{task.attempt_count}}/{{task.max_attempts}}</div>
         <div class="lease_timeout">{{task.lease_timeout|timeout(task.status)}}</div>

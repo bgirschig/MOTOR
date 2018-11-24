@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Task</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+      html {
+        font-family: sans-serif;
+      }
+      .task {
+        border-bottom: 1px solid #0004;
+        padding: 5px;
+      }
+      .task:hover {
+        background-color: #0009;
+        color: white;
+      }
+      .task:hover a{
+        color: white;
+      }
+      .task>div {
+        margin-right: 10px;
+        display: inline-block;
+      }
+      .status {
+        padding: 5px;
+        box-sizing: border-box;
+        display: inline-block;
+        color: white;
+        width: 110px;
+        text-align: center;
+      }
+  
+      a:visited, a {
+        color: blue;
+      }
+  
+      .PENDING { background-color: grey; }
+      .RUNNING { background-color: orange; }
+      .DONE { background-color: green; }
+      .FAILED { background-color: red; }
+      .CANCELLED { background-color: BLACK; }
+  
+      .label, .value {
+        display: inline-block;
+      }
+      .label {
+        font-weight: bold;
+        width: 150px;
+      }
+      .item {
+        width: 100%;
+      }
+      .item pre {
+        position: relative;
+        overflow: scroll;
+        max-height: 200px;
+        width: 100%;
+        outline: thin dotted;
+      }
+      .highlights {
+        display: flex;
+        align-items: center;
+      }
+      .highlights>* {
+        margin-right: 15px;
+      }
+      .details {
+        margin-top: 20px;
+      }
+    </style>
+</head>
+<body>
+  <a class="backlink" href="/list.html">Back</a>
+  <h1>{{key}}</h1>
+
+  <div class="highlights">
+    <div class="status"><div class="{{status}}">{{status}}</div></div>
+    <div class="logsBtn">
+      <a href="https://console.cloud.google.com/logs/viewer?project=kairos-motor&minLogLevel=0&expandAll=false&resource=global&logName=projects%2Fkairos-motor%2Flogs%2Fbunyan_log&filters=jsonPayload.tracker:{{key}}" target="_blank">logs</a>
+    </div>
+    <div class="duplicateBtn"><a href="duplicate/{{key}}">duplicate</a></div>
+    {% if status in ['PENDING', 'RUNNING']%}
+    <div class="cancelBtn">
+      <a href="cancel/{{key}}">cancel</a>
+    </div>
+    {% endif %}
+    {% if status == 'RUNNING'%}
+    <div class="failBtn">
+      <a href="fail/{{key}}">fail attempt</a>
+    </div>
+    {% endif %}
+    <div class="jsonBtn">
+      <a href="/task/{{key}}">view as json</a>
+    </div>
+
+    <div>|</div>
+
+    <!-- special button, depending on tags -->
+    {% if 'render' in tags and status == 'DONE' %}
+    <a href="http://motor.bastiengirschig.com/render_outputs/{{key}}" target="_blank">rendered output</a>
+    {% endif %}
+  </div>
+  
+  <div class="details">
+    <div class="item createTime">
+      <div class="label">created on</div>
+      <div class="value">{{create_time|datetime}}</div>
+    </div>
+    <div class="item payload">
+      <div class="label">payload</div>
+      <pre class="value">{{payload}}</pre>
+    </div>
+    <div class="item response">
+      <div class="label">response</div>
+      <pre class="value">{{response}}</pre>
+    </div>
+    <div class="item tags">
+      <div class="label">tags</div>
+      <div class="value">{{', '.join(tags)}}</div>
+    </div>
+    <div class="item api_version">
+      <div class="label">api version</div>
+      <div class="value">{{api_version}}</div>
+    </div>
+    <div class="item attempt_count">
+      <div class="label">attempts</div>
+      <div class="value">{{attempt_count}} out of {{max_attempts}}</div>
+    </div>
+    <div class="item lease_timeout">
+      <div class="label">timeout</div>
+      <div class="value">{{lease_timeout|timeout(status)}}</div>
+    </div>
+  </div>
+</body>
+</html>

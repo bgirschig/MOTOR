@@ -229,6 +229,25 @@ class ListView(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(response)
 
+class TaskView(webapp2.RequestHandler):
+  def get(self, task_key):
+    try:
+      task = ndb.Key(urlsafe=task_key).get()
+      if not task:
+        raise IndexError('no task found with this id: '+task_key)
+    except ProtocolBufferDecodeError:
+      handleError(None, "invalid key", self)
+    except TypeError:
+      handleError(None, "invalid key", self)
+    except IndexError as error:
+      handleError(None, error.message, self)
+    else:
+      data = task.toDict()
+      data["payload"] = json.dumps(data["payload"], indent=2)
+      response = jinja.get_template('task.html').render(data)
+      self.response.headers['Content-Type'] = 'text/html'
+      self.response.write(response)
+
 # TODO: Make this transactionnal. Now, If a lease request is received before the
 # previous request has updated its task status, the same task will be returned.
 # This works for now, as we have a small number of render nodes, making
@@ -324,6 +343,7 @@ def hasValidApiVersion(task):
 
 app = webapp2.WSGIApplication([
     ('/', TestRoute),
+    webapp2.Route(r'/task/<task_key>.html', handler=TaskView, methods=['GET', 'PUT']),
     webapp2.Route(r'/task/<task_key>', handler=TaskHandler, methods=['GET', 'PUT']),
     webapp2.Route(r'/task', handler=TaskHandler, methods=['POST']),
     webapp2.Route(r'/duplicate/<task_key>', handler=DuplicateHandler, methods=['GET']),

@@ -3,6 +3,7 @@ from protorpc import messages
 from google.appengine.ext.ndb import msgprop
 import time
 import datetime
+
 class Status(messages.Enum):
   PENDING = 0
   RUNNING = 1
@@ -27,7 +28,7 @@ class Task(ndb.Model):
       'create_time': time.mktime(self.create_time.timetuple()),
       'payload': self.payload,
       'response': self.response,
-      'tags': ','.join(self.tags),
+      'tags': self.tags,
       'api_version': self.api_version,
       'key': self.key.urlsafe(),
       'attempt_count': self.attempt_count,
