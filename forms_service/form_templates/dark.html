@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{{title}}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      font-weight: normal;
+      margin: 0;
+    }
+    body {
+      text-align: center;
+      background-color: rgb(63, 62, 60);
+      font-size: 100%;
+      font-family: sans-serif;
+    }
+    form {
+      margin-top: 2rem;
+      background-color: white;
+      text-align: left;
+      display: inline-block;
+      /* min-width: 500px; */
+      padding: 40px 60px;
+    }
+    h1, h2, h3 {
+      margin: 0;
+    }
+    h3 {
+      margin-top: 1em;
+      margin-bottom: 0.3em;
+    }
+    label {
+      display: block;
+    }
+    label div {
+      font-size: 1.5rem;
+    }
+
+    input[type=text] {
+      border: none;
+      border-bottom: thin solid rgba(0, 0, 0, 0.6);
+      width: 20em;
+      padding: 10px 0;
+    }
+    input[type=text]:focus {
+      outline: none;
+      border-bottom: 1.5px solid rgb(48, 113, 167);
+    }
+
+    input[type=submit] {
+      margin-top: 2rem;
+      background-color: rgb(68, 145, 209);
+      border: none;
+      font-size: 1rem;
+      padding: 10px 15px;
+      color: white;
+    }
+
+    #logo {
+      max-height: 100px;
+      margin: auto;
+      display: block;
+      margin-bottom: 0.5em;
+    }
+    header {
+      position: absolute;
+      width: 100%; 
+      background-color: black;
+      color: white;
+      text-align: left;
+      padding: 1em 1em 2em 1em;
+      box-sizing: border-box;
+      z-index: -1;
+      font-size: 1.3rem;
+    }
+
+    @media all and (max-width:1000px) {
+      header {
+        padding: 1em 0.8em 3em 0.8em;
+        /* text-align: center */
+      }
+      form {
+        margin-top: 5.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>MOTOR - render request</header>
+  <form action="">
+    <img id=logo src="{{logo}}">
+    <h1>{{title}}</h1>
+    {% for field in fields %}
+      {% if field.type == "textfield" %}
+        <label>
+          <h3>{{field.displayName or field.name}}</h3>
+          <input
+            type="text"
+            name="{{field.name}}"
+            placeholder="{{ field.placeholder }}"
+            maxlength="{{field.constraints.maxLength}}"
+            {{ "required" if field.constraints.required }}>
+        </label>
+      
+      {% elif field.type in ["checkbox", "radio"] %}
+        <h3>{{field.displayName or field.name}}</h3>
+        {% for choice in field.choices %}
+          {% if "other" in choice %}
+            <label>
+              <input
+              type="{{field.type}}"
+              name="{{field.name}}"
+              value="other">
+              <input type="text" name="{{field.name}}_other" placeholder="other...">
+            </label>
+          {% else %}
+            <label>
+              <input
+              type="{{field.type}}"
+              name="{{field.name}}"
+              value="{{ choice }}">
+              {{choice}}
+            </label>
+          {% endif %}
+        {% endfor %}
+
+      {% elif field.type == "choice" %}
+        <h3>{{field.displayName or field.name}}</h3>
+        {% for choice in field.choices %}
+          {% if "other" in choice %}
+          <label>
+              <input
+              type="checkbox"
+              name="{{field.name}}"
+              value="other">
+              <input type="text" name="{{field.name}}_other" placeholder="other...">
+            </label>
+          {% else %}
+            <label>
+              <input
+              type="checkbox"
+              name="{{field.name}}"
+              value="{{ choice }}">
+              {{choice}}
+            </label>
+          {% endif %}
+        {% endfor %}
+
+      {% elif field.type == "datetime" %}
+        <label>
+          <h3>{{field.displayName or field.name}}</h3>
+          <input
+            type="datetime-local"
+            name="{{field.name}}"
+            min="{{field.constraints.min}}" max="{{field.constraints.max}}"
+            {{ "required" if field.constraints.required }}>
+        </label>
+
+      {% elif field.type == "files" %}
+        <label>
+            <h3>{{field.displayName or field.name}}</h3>
+            <input
+              type="file"
+              name="{{field.name}}"
+              {{ "multiple" if field.constraints.maxCount != 1 }}
+              {{ "required" if field.constraints.required }}>
+          </label>
+      {% endif %}
+    {% endfor %}
+    <input type="submit" value="Send">
+  </form>
+
+  <script>
+    let dateFields = document.querySelectorAll('input[type=datetime-local]');
+    dateFields.forEach(field=>{
+      if (field.getAttribute('min') == "now") {
+        field.setAttribute('min', new Date().toISOString().split('.')[0].slice(0,-3))
+      } else if (field.getAttribute('max') == "now") {
+        field.setAttribute('max', new Date().toISOString().split('.')[0].slice(0,-3))
+      }
+    });
+  </script>
+</body>
+</html>

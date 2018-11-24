@@ -1,0 +1,29 @@
+title: Xenix movie of the day
+template: dark
+logo: https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png
+callback: https://form-input-dot-kairos-motor.appspot.com/list.html
+fields:
+  - name: title
+    type: textfield
+    displayName: Name of the film
+    constraints:
+      maxLength: 10
+  - name: language
+    type: radio
+    choices:
+      - french
+      - english
+      - japanese
+      - other: textfield
+  - name: screening_time
+    displayName: Screening date and time
+    type: datetime
+    constraints:
+      min: now
+  - name: images
+    displayName: Images of the film
+    type: files
+    constraints:
+      maxCount: 1
+      maxSize: 4Mo
+      # required: true

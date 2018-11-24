@@ -1,0 +1,15 @@
+runtime: python27
+api_version: 1
+threadsafe: true
+service: 'forms'
+
+handlers:
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+- url: /.*
+  script: main.app
+
+libraries:
+- name: jinja2
+  version: latest
