@@ -1,3 +1,5 @@
+# pylint: disable=E0611,E0401
+
 import logging
 import webapp2
 from google.appengine.api.modules.modules import get_current_module_name
