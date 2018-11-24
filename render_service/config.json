@@ -1,0 +1,19 @@
+{
+    "ftp": {
+        "host": null,
+        "port": null,
+        "user": null,
+        "password": null
+    },
+    "ae_render_osx": "/Applications/Adobe After Effects CC 2018/aerender",
+    "ae_render": "C:\\Program Files\\Adobe\\Adobe After Effects CC 2018\\Support Files\\aerender.exe",
+    "presets_dir": "./encoder_presets",
+    "media_encoder": {
+        "port": 8080,
+        "hostname": "localhost"
+    },
+    "apiPort": 8081,
+    "queue_ping_rate": 30,
+    "queue_api_url": "https://task-queue-dot-kairos-motor.appspot.com",
+    "queue_api_url_": "http://localhost:8081"
+}

@@ -1,0 +1,7 @@
+{
+    "compName": "main",
+    "resources": [],
+    "encoders": [
+        "-pix_fmt yuv420p video.mp4"
+    ]
+}
