@@ -1,12 +1,22 @@
-# Mail service
+# MOTOR
+A collection of tools for rendering and publishing videos on demand
 
-A service for handling render requests sent by mail
+## Services
 
-## process
-- An email is received on render@kairos-motor.appspotmail.com
-- The email is parsed. Links in the mail are extracted
-- The webpage each link points to is parsed, to retrieve info for the render request
-- A render request is created and added to the render queue
-- An email response is sent, to confirm the request has been sent, preview the parsed data
-- the render is performed
-- An email confirmation is sent
+### Default
+handles emails sent to @kairos-motor.appspotmail.com
+
+### Task_queue
+manages MOTOR's task queue:
+- add a task to the queue
+- when a worker node is ready, it pulls from the queue
+- when the work is done, status is updated
+
+### forms
+handles motor's form needs
+- render form from definition
+- handle for output (upload files, call callback, ...)
+
+### rendernode
+The worker service for fultilling render requests
+TODO: move code to this repo
