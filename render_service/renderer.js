@@ -9,7 +9,9 @@ const spawn = require('child_process').spawn;
 const runEncoders = require('./encodersRunner');
 const global_config = require("./config");
 const logger = require('./logging');
+const {Storage} = require('@google-cloud/storage');
 
+storage = new Storage();
 // const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
 // const TEMPLATES_DIR = path.resolve('./templates');
 // const DEFAULT_COMP_NAME = 'main';
@@ -229,10 +231,20 @@ async function fetchResource(urls, targetPath) {
             return fetchResource(url, targetPathIndexed)
         });
         return Promise.all(promises)
-    } else {
-        let url = urls;
+    }
+    
+    let url = urls;
+    await fs.ensureFile(targetPath)
 
-        await fs.ensureFile(targetPath)
+    if(url.startsWith("gs://")) {
+        const parts = targetPath.replace('gs://', '').split('/');
+        const bucket = parts[0];
+        const file = parts.slice(1,-1);
+        await storage
+            .bucket(bucket)
+            .file(file)
+            .download({destination:targetPath});
+    } else {
         response = await fetch(url);
         if (response.status !== 200) {
             throw new Error('failed asset request: ' + url);
@@ -248,5 +260,10 @@ async function fetchResource(urls, targetPath) {
         }
     }
 }
+
+async function test(){
+    
+}
+test();
 
 module.exports = Renderer;
