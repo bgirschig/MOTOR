@@ -28,7 +28,7 @@
       margin: 0;
     }
     h3 {
-      margin-top: 1em;
+      margin-top: 2em;
       margin-bottom: 0.3em;
     }
     label {
@@ -42,7 +42,7 @@
       border: none;
       border-bottom: thin solid rgba(0, 0, 0, 0.6);
       width: 20em;
-      padding: 10px 0;
+      padding: 5px 0;
     }
     input[type=text]:focus {
       outline: none;
@@ -89,7 +89,7 @@
 </head>
 <body>
   <header>MOTOR - render request</header>
-  <form action="">
+  <form action="/response" method="POST" enctype="multipart/form-data">
     <img id=logo src="{{logo}}">
     <h1>{{title}}</h1>
     {% for field in fields %}
@@ -181,6 +181,8 @@
         field.setAttribute('max', new Date().toISOString().split('.')[0].slice(0,-3))
       }
     });
+
+    console.log(document.querySelector('input[type=submit]'));
   </script>
 </body>
 </html>

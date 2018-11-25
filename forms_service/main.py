@@ -5,6 +5,7 @@ from google.appengine.api.modules.modules import get_current_module_name
 import jinja2
 import yaml
 from os import path
+from formHandler import FormHandler
 
 SERVICE_NAME = get_current_module_name()
 TEMPLATES_PATH = "form_templates"
@@ -29,12 +30,18 @@ class ShowForm(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(response)
 
+class FormResponse(webapp2.RequestHandler):
+  def get(self, form_name):
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.write('ok')
+
 class TestRoute(webapp2.RequestHandler):
   def get(self):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(SERVICE_NAME + ' ok')
 
 app = webapp2.WSGIApplication([
+    ('/response', FormHandler),
     ('/', TestRoute),
     webapp2.Route(r'/<form_name>', handler=ShowForm),
 ])

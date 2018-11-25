@@ -1,13 +1,13 @@
 title: Xenix movie of the day
 template: dark
 logo: https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png
-callback: https://form-input-dot-kairos-motor.appspot.com/list.html
+action: https://form-input-dot-kairos-motor.appspot.com/list.html
 fields:
   - name: title
     type: textfield
     displayName: Name of the film
     constraints:
-      maxLength: 10
+      maxLength: 50
   - name: language
     type: radio
     choices:
