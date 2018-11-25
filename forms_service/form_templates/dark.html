@@ -107,7 +107,7 @@
       {% elif field.type in ["checkbox", "radio"] %}
         <h3>{{field.displayName or field.name}}</h3>
         {% for choice in field.choices %}
-          {% if "other" in choice %}
+          {% if "_other" in choice %}
             <label>
               <input
               type="{{field.type}}"
@@ -169,6 +169,7 @@
           </label>
       {% endif %}
     {% endfor %}
+    <input type="hidden" name="form_definition" value="{{form_definition}}">
     <input type="submit" value="Send">
   </form>
 

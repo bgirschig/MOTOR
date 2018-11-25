@@ -2,6 +2,7 @@ title: Xenix movie of the day
 template: dark
 logo: https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png
 action: https://form-input-dot-kairos-motor.appspot.com/list.html
+
 fields:
   - name: title
     type: textfield
@@ -14,7 +15,7 @@ fields:
       - french
       - english
       - japanese
-      - other: textfield
+      - _other
   - name: screening_time
     displayName: Screening date and time
     type: datetime
@@ -24,6 +25,19 @@ fields:
     displayName: Images of the film
     type: files
     constraints:
-      maxCount: 1
+      maxCount: 3
       maxSize: 4Mo
-      # required: true
+
+output:
+  template: xenix
+  compName: main
+  resources:
+    - target: (Footage)/data.json
+      data:
+        field_title: title
+        field_language: language
+        field_screening_time: screening_time
+    - target: (Footage)/01-footage/image_#.png
+      field_src: images/multi
+  encoders:
+    - -pix_fmt yuv420p video.mp4

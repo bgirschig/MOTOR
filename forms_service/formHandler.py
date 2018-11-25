@@ -8,34 +8,67 @@ import os
 from os import path
 import uuid
 import math
+import yaml
 
 MAX_FILE_SIZE = 1 * 10**6
 bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 
+other_suffix = "_other"
+other_suffix_length = len(other_suffix)
+
 class FormHandler(webapp2.RequestHandler):
   def post(self):
     fields = dict(self.request.POST)
-    for key in fields.keys():
-      field = fields[key]
-      if isFile(field):
-        # Upload file to gcs, and replace the file object in the data by the url
-        # to that file in gcs
-        file_size = get_file_size(field) 
-        if file_size > MAX_FILE_SIZE:
-          human_max_size = str(math.floor(MAX_FILE_SIZE/1000))+"KB"
-          human_size = str(math.floor(file_size/1000))+"KB"
-          raise FileSizeExceeded("Uploaded files must be {} or lower. the file in field [{}] is {}".format(human_max_size, key, human_size))
-        fields[key] = upload_file(field)
-      
-      parts = key.split("_")      
-      # handle the 'other' fields from select and radio types
-      if len(parts) == 2 and parts[0] in fields and parts[1] == "other":
-        if fields[parts[0]] == "other":
-          fields[parts[0]] = field
-        del fields[key]
+    
+    definition_path = fields["form_definition"]
+    with open(definition_path, 'r') as f:
+      form_definition = yaml.load(f)
+    
+    print form_definition
+    output = form_definition["output"]
+    output = extractData(output, self.request.POST, form_definition)
 
-    self.response.headers['Content-Type'] = 'text/html'
-    self.response.write(json.dumps(fields, indent=2))
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(json.dumps(output, indent=2))
+
+def extractData(obj, fields, form_definition):
+  if type(obj) == str or type(obj) == unicode:
+    return obj
+  elif type(obj) == list:
+    return [extractData(item, fields, form_definition) for item in obj]
+  elif type(obj) == dict:
+    for key in obj:
+      if key.startswith("field_"):
+        new_key = key.replace("field_", "")
+        try:
+          field_name, options = obj[key].split("/") 
+          options=options.split(',')
+        except ValueError:
+          field_name = obj[key]
+          options = {}
+        obj[new_key] = parseItem(field_name, fields, options)
+        del obj[key]
+      else:
+        obj[key] = extractData(obj[key], fields, form_definition)
+    return obj
+  else:
+      raise Exception('unexpected value type: '+type())
+
+def parseItem(field_name, fields, options):
+  output = []
+  values = fields.getall(field_name)
+  for value in values:
+    if isFile(value):
+      checkFile_size(value)
+      output.append(upload_file(value))
+    elif(value == "other" and field_name+other_suffix in fields):
+      output.append(fields[field_name+other_suffix])
+    else:
+      output.append(fields[field_name])
+  
+  if("multi" not in options):
+    output = output[0]
+  return output
 
 def isFile(item):
   try:
@@ -48,6 +81,13 @@ def get_file_size(file):
   size = file.file.tell()
   file.file.seek(0)
   return size
+
+def checkFile_size(file):
+  file_size = get_file_size(file) 
+  if file_size > MAX_FILE_SIZE:
+    human_max_size = str(math.floor(MAX_FILE_SIZE/1000))+"KB"
+    human_size = str(math.floor(file_size/1000))+"KB"
+    raise FileSizeExceeded("Uploaded files must be {} or lower. the given file is {}".format(human_max_size, human_size))
 
 def upload_file(file):
   content = file.file.read()

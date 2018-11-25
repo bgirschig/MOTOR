@@ -17,14 +17,17 @@ jinja = jinja2.Environment(
 
 class ShowForm(webapp2.RequestHandler):
   def get(self, form_name):
-    with open(path.join("form_definitions", form_name+".yaml"), 'r') as f:
+    definition_path = path.join("form_definitions", form_name+".yaml")
+    with open(definition_path, 'r') as f:
       form_definition = yaml.load(f)
     
     for field in form_definition["fields"]:
       if "constraints" not in field:
         field["constraints"] = {}
 
-    print form_definition["title"]
+    # A reference to the form definition will be used while parsing the form
+    form_definition["form_definition"] = definition_path
+
     response = jinja.get_template(form_definition["template"]+".html").render(form_definition)
     
     self.response.headers['Content-Type'] = 'text/html'
