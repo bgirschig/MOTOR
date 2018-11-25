@@ -23,6 +23,8 @@
       display: inline-block;
       /* min-width: 500px; */
       padding: 40px 60px;
+      z-index: 1;
+      position: relative;
     }
     h1, h2, h3 {
       margin: 0;
@@ -72,8 +74,13 @@
       text-align: left;
       padding: 1em 1em 2em 1em;
       box-sizing: border-box;
-      z-index: -1;
       font-size: 1.3rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    header a {
+      color: inherit;
+      font-size: 0.8em;
     }
 
     @media all and (max-width:1000px) {
@@ -88,7 +95,10 @@
   </style>
 </head>
 <body>
-  <header>MOTOR - render request</header>
+  <header>
+    <div>MOTOR - render request</div>
+    <div><a href="{{logout_url}}">log out</a></div>
+  </header>
   <form action="/response" method="POST" enctype="multipart/form-data">
     <img id=logo src="{{logo}}">
     <h1>{{title}}</h1>

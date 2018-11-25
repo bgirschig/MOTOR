@@ -2,6 +2,9 @@ title: Xenix movie of the day
 template: dark
 logo: https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo_TV_2015.png
 action: https://form-input-dot-kairos-motor.appspot.com/list.html
+users:
+  - test@example.com
+  - bastien.girschig@gmail.com
 
 fields:
   - name: title
