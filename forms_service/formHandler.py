@@ -63,7 +63,7 @@ def upload_file(file):
       retry_params=write_retry_params) as f:
     f.write(content)
 
-  return file_path
+  return "gs:/"+file_path
 
 class FileSizeExceeded(Exception):
     pass
