@@ -1,5 +1,10 @@
 # Forms service
 
+## TODO
+- The task_queue_client code is duplicated across services. would be nice to unify that
+- Google drive download is Über slow, try solving (...not sure how)
+- task_queue_client url depends on service. Should use an env variable
+
 ## form definitions
 - title: title for the tab, displayed on the page, etc...
 - action: Where to send the output of the form, once processed

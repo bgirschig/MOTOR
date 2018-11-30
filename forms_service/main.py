@@ -5,10 +5,12 @@ from google.appengine.api.modules.modules import get_current_module_name
 import jinja2
 import yaml
 from os import path
-from formHandler import FormHandler
 from google.appengine.api import users
 import logging
 import traceback
+import json
+from formHandler import FormHandler
+from google_forms import checkSpreadsheet
 
 SERVICE_NAME = get_current_module_name()
 TEMPLATES_PATH = "form_templates"
@@ -58,7 +60,6 @@ class FormResponse(webapp2.RequestHandler):
 
 class Logout(webapp2.RequestHandler):
   def get(self, form_name):
-    user = users.get_current_user()
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write('ok')
 
@@ -67,15 +68,25 @@ class TestRoute(webapp2.RequestHandler):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(SERVICE_NAME + ' ok')
 
+# Check google spreadsheets for updates
+class CheckSpreadsheet(webapp2.RequestHandler):
+  def get(self):
+    spreadsheet_id = "1ki4K_Y6FPuSTY4tEJP38c_N-kIPMNH3c9JzEQcgp_UU"
+    data = checkSpreadsheet(spreadsheet_id, 'xenix')
+
+    self.response.headers['Content-Type'] = 'application/json'
+    self.response.write(json.dumps(data))
+
 def handle_500(request, response, exception):
+  logging.exception(exception)
   user = users.get_current_user()
   is_admin = users.is_current_user_admin()
-  if is_admin or user.email() == "test@example.com":
+  if user: is_admin = is_admin or user.email() == "test@example.com"
+  if is_admin:
     response.write("<style>html{background-color:#ddd;} .red{color:red}</style>")
     response.write("<p><strong>Note</strong> You are seeing this because you are logged in as admin</p>")
     response.write("<p class='red'>%s</p>"%exception)
     response.write("<pre>%s</pre>"%traceback.format_exc())
-    logging.exception(exception)
   else:
     response.write('A server error occurred!')
     response.set_status(500)
@@ -87,6 +98,7 @@ def handle_404(request, response, exception):
 app = webapp2.WSGIApplication([
     ('/logout', Logout),
     ('/response', FormHandler),
+    ('/check_spreadsheets', CheckSpreadsheet),
     ('/', TestRoute),
     webapp2.Route(r'/<form_name>', handler=ShowForm),
 ])

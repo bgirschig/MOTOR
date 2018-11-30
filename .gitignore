@@ -2,3 +2,4 @@ lib/
 env/
 *.pyc
 gcloud_credentials.json
+forms_service/app_credentials.json
