@@ -237,9 +237,10 @@ async function fetchResource(urls, targetPath) {
     await fs.ensureFile(targetPath)
 
     if(url.startsWith("gs://")) {
-        const parts = targetPath.replace('gs://', '').split('/');
+        const parts = url.replace('gs://', '').split('/');
         const bucket = parts[0];
-        const file = parts.slice(1,-1);
+        const file = parts.slice(1).join('/');
+
         await storage
             .bucket(bucket)
             .file(file)
