@@ -39,7 +39,7 @@ def checkSpreadsheet(spreadsheet_id, definition_name):
     if not "MOTOR id" in item:
       raise KeyError("missing 'MOTOR id' column in spreadsheet. please add it")
     
-    if not item["MOTOR id"] and item["Images"] and item["Email Address"]:
+    if not item["MOTOR id"] and item["Image"] and item["Email Address"]:
       prepare_images(item)
       request = prepare_request(item)
       request["line_idx"] = line_idx + 1 # line idx starts at 1
@@ -70,23 +70,24 @@ def getColName(idx):
 	return chr(ord('A')+idx)
 
 def prepare_images(item):
-  item['Images'] = item['Images'].split(', ')
-  for idx, file_url in enumerate(item["Images"]):
+  item['Image'] = item['Image'].split(', ')
+  for idx, file_url in enumerate(item["Image"]):
     parsed = parse_qs(urlparse(file_url).query)
     file_id = parsed["id"][0]
     drive_url = "https://drive.google.com/uc?authuser=0&id=%s"%file_id
     drive_file = urllib2.urlopen(drive_url)
     gs_url = upload_image(drive_file, 'image/jpeg')
-    item['Images'][idx] = gs_url
+    item['Image'][idx] = gs_url
 
 def prepare_request(data):
   data_file = {
     "title": data["Title"],
+    "date1": data["Date 1"],
+    "date2": data["Date 2"],
+    "time": data["Screening Time"],
+    "duration": data["Duration"],
     "language": data["Language"],
-    "screening_hour": data["Screening hour"],
-    "date": data["Date"],
-    "length": "Length",
-    "director": "Directors name",
+    "director": data["Directors name"],
   }
   request_payload = {
     "template": "xenix",
@@ -95,15 +96,17 @@ def prepare_request(data):
     "requesterID": data["Email Address"],
     "resources": [
       {
-        "target": "(Footage)/data.json",
+        "target": "(footage)/data.json",
         "data": data_file,
       },
       {
-        "target": "(Footage)/01-footage/5378.jpg",
-        "src": data["Images"][0],
+        "target": "(footage)/01-footage/5378.jpg",
+        "src": data["Image"][0],
       },
     ],
-    "encoders": "-pix_fmt yuv420p video.mp4",
+    "encoders": [
+      "-pix_fmt yuv420p video.mp4"
+    ],
   }
 
   return request_payload
