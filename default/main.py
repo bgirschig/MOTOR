@@ -1,3 +1,5 @@
+# pylint: disable=E0611,E0401
+
 import logging
 import mailParser
 import html_parser
@@ -15,7 +17,7 @@ from time import time
 import hashlib
 from random import randrange
 from google.appengine.api import urlfetch
-from task_queue_client import Queue
+from common.task_queue_client import Queue
 
 SELF_EMAIL = "render@kairos-motor.appspotmail.com"
 ACCEPT_STATUS_CODES = [200, 201, 202]
