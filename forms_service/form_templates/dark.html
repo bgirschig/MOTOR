@@ -103,6 +103,7 @@
     <img id=logo src="{{logo}}">
     <h1>{{title}}</h1>
     {% for field in fields %}
+      {% set constraints = field.constraints or {} %}
       {% if field.type == "textfield" %}
         <label>
           <h3>{{field.displayName or field.name}}</h3>
@@ -110,8 +111,8 @@
             type="text"
             name="{{field.name}}"
             placeholder="{{ field.placeholder }}"
-            maxlength="{{field.constraints.maxLength}}"
-            {{ "required" if field.constraints.required }}>
+            maxlength="{{constraints.maxLength}}"
+            {{ "required" if constraints.required }}>
         </label>
       
       {% elif field.type in ["checkbox", "radio"] %}
@@ -164,8 +165,8 @@
           <input
             type="datetime-local"
             name="{{field.name}}"
-            min="{{field.constraints.min}}" max="{{field.constraints.max}}"
-            {{ "required" if field.constraints.required }}>
+            min="{{constraints.min}}" max="{{constraints.max}}"
+            {{ "required" if constraints.required }}>
         </label>
 
       {% elif field.type == "files" %}
@@ -174,8 +175,8 @@
             <input
               type="file"
               name="{{field.name}}"
-              {{ "multiple" if field.constraints.maxCount != 1 }}
-              {{ "required" if field.constraints.required }}>
+              {{ "multiple" if constraints.maxCount != 1 }}
+              {{ "required" if constraints.required }}>
           </label>
       {% endif %}
     {% endfor %}

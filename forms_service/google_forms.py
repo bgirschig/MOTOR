@@ -1,11 +1,13 @@
+# pylint: disable=E1101
+
 from urlparse import urlparse, parse_qs
 import urllib2
-from utils import upload_image
+from common.storage_utils import upload_image
 from googleapiclient import discovery
 from google.oauth2 import service_account
 from os import path
 import math
-from task_queue_client import Queue
+from common.task_queue_client import Queue
 
 scopes = [
   'https://www.googleapis.com/auth/spreadsheets',
@@ -21,8 +23,8 @@ queue = Queue(TASK_QUEUE_API_URL)
 def checkSpreadsheet(spreadsheet_id, definition_name):
   result = sheets.values().get(spreadsheetId=spreadsheet_id, range="1:10").execute()
   values = result.get('values', [])
-  
   headers = values[0]
+
   requests = []
   for line_idx, line in enumerate(values):
     # skip header row (while keeping line_idx consistent)
@@ -50,7 +52,6 @@ def checkSpreadsheet(spreadsheet_id, definition_name):
   
   for request in requests:
     task_id = queue.appendTask(request, ["render"], 4)
-    print task_id
     update_data.append({
       "range": motorColumn+str(request["line_idx"]),
       "values": [[task_id]],
@@ -79,6 +80,7 @@ def prepare_images(item):
     gs_url = upload_image(drive_file, 'image/jpeg')
     item['Image'][idx] = gs_url
 
+# TODO: Use a form definition for that
 def prepare_request(data):
   data_file = {
     "title": data["Title"],

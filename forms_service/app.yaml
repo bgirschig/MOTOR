@@ -5,8 +5,8 @@ service: 'forms'
 
 handlers:
 - url: /favicon.ico
-  static_files: favicon.ico
-  upload: favicon.ico
+  static_files: common/favicon.ico
+  upload: common/favicon.ico
 - url: /check_spreadsheets
   script: main.app
   login: admin

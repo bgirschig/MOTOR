@@ -1,19 +1,24 @@
 # pylint: disable=E0611,E0401
 
+""" Handles the response to a MOTOR form: parses its data according to the form
+definition and returns a formatted dictionnary.
+"""
+
 import webapp2
 import json
-import os
-from os import path
-import math
 import yaml
-from utils import upload_file
+from common.storage_utils import upload_file
+from common import file_utils
+from common import utils
 
-MAX_FILE_SIZE = 1 * 10**6
-
+# config
+MAX_FILE_SIZE = 1 * utils.MB
 other_suffix = "_other"
+
+# misc
 other_suffix_length = len(other_suffix)
 
-class FormHandler(webapp2.RequestHandler):
+class FormResponseHandler(webapp2.RequestHandler):
   def post(self):
     fields = dict(self.request.POST)
     
@@ -54,8 +59,8 @@ def parseItem(field_name, fields, options):
   output = []
   values = fields.getall(field_name)
   for value in values:
-    if isFile(value):
-      checkFile_size(value.file)
+    if file_utils.isFile(value):
+      file_utils.checkFile_size(value.file, MAX_FILE_SIZE)
       output.append(upload_file(value.file, value.type))
     elif(value == "other" and field_name+other_suffix in fields):
       output.append(fields[field_name+other_suffix])
@@ -65,25 +70,3 @@ def parseItem(field_name, fields, options):
   if("multi" not in options):
     output = output[0]
   return output
-
-def isFile(item):
-  try:
-    return bool(item.file)
-  except AttributeError:
-    return False
-
-def get_file_size(file):
-  file.seek(0, 2)
-  size = file.tell()
-  file.seek(0)
-  return size
-
-def checkFile_size(file):
-  file_size = get_file_size(file) 
-  if file_size > MAX_FILE_SIZE:
-    human_max_size = str(math.floor(MAX_FILE_SIZE/1000))+"KB"
-    human_size = str(math.floor(file_size/1000))+"KB"
-    raise FileSizeExceeded("Uploaded files must be {} or lower. the given file is {}".format(human_max_size, human_size))
-
-class FileSizeExceeded(Exception):
-    pass
