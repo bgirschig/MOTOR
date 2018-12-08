@@ -53,6 +53,15 @@ class Queue():
 
     return json.loads(response.content)
 
+  def release(self, task_id):
+    response = urlfetch.fetch(
+        url=path.join(self.api_url, 'release', task_id),
+        method=urlfetch.GET
+    )
+    if response.status_code != 200:
+      handleError(response)
+    return json.loads(response.content)
+
   def getTask(self, task_id):
     """Returns the task object for the given ID
     

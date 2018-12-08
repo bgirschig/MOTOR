@@ -123,7 +123,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/task', handler=TaskHandler, methods=['POST']),
     webapp2.Route(r'/duplicate/<task_key>', handler=DuplicateHandler, methods=['GET']),
     webapp2.Route(r'/cancel/<task_key>', handler=CancelHandler, methods=['GET']),
-    webapp2.Route(r'/fail/<task_key>', handler=FailHandler, methods=['GET']),
+    webapp2.Route(r'/release/<task_key>', handler=FailHandler, methods=['GET']),
     webapp2.Route(r'/succeed/<task_key>', handler=SucceedHandler, methods=['GET']),
     webapp2.Route(r'/list.html', handler=ListHandler, methods=['GET']),
     webapp2.Route(r'/list', handler=ListHandler, methods=['GET']),
