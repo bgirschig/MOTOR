@@ -182,7 +182,6 @@ def update_tasks(task_list):
     # pending tasks that don't have any more attempts have failed
     if task.status == Status.PENDING and task.attempt_count >= task.max_attempts:
       task.status = Status.FAILED
-      print "modified b"
       is_modified = True
     
     if is_modified:

@@ -1,3 +1,5 @@
+# pylint: disable=E0611,E0401
+
 import logging
 from google.appengine.api import urlfetch
 import json

@@ -25,7 +25,6 @@ def timeout_filter(timestamp, status="PENDING"):
   now = datetime.datetime.now()
   itemTime = datetime.datetime.fromtimestamp(timestamp)
   
-  print now, "---", itemTime
   if now > itemTime: return "expired"
 
   delta = itemTime - now

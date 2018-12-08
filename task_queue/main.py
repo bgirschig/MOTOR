@@ -21,7 +21,6 @@ class ServiceTest(webapp2.RequestHandler):
 
 class TaskHandler(webapp2.RequestHandler):
   def get(self, task_key):
-    print task_key
     task = taskQueueCore.get_task(task_key)
     data = task.toDict()
     if self.request.url.endswith(".html"):
@@ -37,7 +36,7 @@ class TaskHandler(webapp2.RequestHandler):
     try:
       request_data = json.loads(self.request.body)
     except ValueError as error:
-      raise ValueError("Json parsing error: "+error)
+      raise ValueError("Json parsing error: "+str(error))
 
     try:
       task = Task(
@@ -46,7 +45,7 @@ class TaskHandler(webapp2.RequestHandler):
         max_attempts=request_data.get("max_attempts", 5),
         callback_url=request_data.get("callback_url", ""))
     except BadValueError as error:
-      raise ValueError("Invalid task data: "+error)
+      raise ValueError("Invalid task data: "+str(error))
 
     task_id = taskQueueCore.append_task(task)
     self.response.headers['Content-Type'] = 'application/json'
