@@ -75,12 +75,12 @@ class DuplicateHandler(webapp2.RequestHandler):
 class CancelHandler(webapp2.RequestHandler):
   def get(self, task_key):
     taskQueueCore.cancel_task(task_key)
-    self.redirect("/list.html")
+    self.redirect(self.request.referer or "/list.html")
 
 class FailHandler(webapp2.RequestHandler):
   def get(self, task_key):
     taskQueueCore.release_task(task_key)
-    self.redirect("/list.html")
+    self.redirect(self.request.referer or "/list.html")
 
 class SucceedHandler(webapp2.RequestHandler):
   def get(self, task_key):
