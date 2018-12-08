@@ -1,16 +1,26 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width" initial-scale="1">
     <style>
       {% include 'base.css' %}
     </style>
     {% block head %}{% endblock %}
-</head>
-<body>
-    <h1>{% block title %}{% endblock %}</h1>
-    <main>{% block content %}{% endblock %}</main>
-    <footer>MOTOR - <a href="http://kairosworks.net/" target="_blank">kairos</a> - <a href="mailto:bastien.girschig@gmail.com" target="_blank">bastien girschig</a></footer>
-</body>
+  </head>
+  <body>
+    <table border="0" cellspacing="0" width="100%">
+      <tr>
+          <td></td>
+          <td class="main" width="700">
+            {% block header %}{% endblock %}
+            <hr>
+            {% block content %}{% endblock %}
+            <hr>
+            <footer>MOTOR - <a href="http://kairosworks.net/" target="_blank">kairos</a> - <a href="mailto:bastien.girschig@gmail.com" target="_blank">bastien girschig</a></footer>
+          </td>
+          <td></td>
+      </tr>
+    </table>
+  </body>
 </html>

@@ -1,10 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Sorry{% endblock %}
+{% block header %}
+<h1>Sorry</h1>
+<h2>we could not complete your render request</h2>
+{% endblock %}
 
 {% block content %}
 <p>It looks like there has been a problem with your render request</p>
 <p>We are investigating the issue, and will come back to you as soon as possible</p>
+<br>
 <ul>
   <li><span class='label'>request id</span><span>{{key}}</span></li>
   <li><span class='label'>template name</span><span>{{payload.template}}</span></li>
