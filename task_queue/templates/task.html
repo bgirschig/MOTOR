@@ -81,15 +81,15 @@
     <div class="logsBtn">
       <a href="https://console.cloud.google.com/logs/viewer?project=kairos-motor&minLogLevel=0&expandAll=false&resource=global&logName=projects%2Fkairos-motor%2Flogs%2Fbunyan_log&filters=jsonPayload.tracker:{{key}}" target="_blank">logs</a>
     </div>
-    <div class="duplicateBtn"><a href="duplicate/{{key}}">duplicate</a></div>
+    <div class="duplicateBtn"><a href="/duplicate/{{key}}">duplicate</a></div>
     {% if status in ['PENDING', 'RUNNING']%}
     <div class="cancelBtn">
-      <a href="cancel/{{key}}">cancel</a>
+      <a href="/cancel/{{key}}">cancel</a>
     </div>
     {% endif %}
     {% if status == 'RUNNING'%}
     <div class="failBtn">
-      <a href="fail/{{key}}">fail attempt</a>
+      <a href="/fail/{{key}}">fail attempt</a>
     </div>
     {% endif %}
     <div class="jsonBtn">

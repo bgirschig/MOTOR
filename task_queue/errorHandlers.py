@@ -1,5 +1,3 @@
-# pylint: disable=E0611,E0401
- 
 import logging
 import traceback
 from google.appengine.api import users
