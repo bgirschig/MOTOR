@@ -167,6 +167,9 @@ def cancel_task(id):
 def release_task(id):
   update_task(id, {'status':'PENDING'})
 
+def succeed_task(id):
+  update_task(id, {'status':'DONE'})
+
 def update_tasks(task_list):
   updated_tasks = []
 

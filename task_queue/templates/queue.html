@@ -81,6 +81,11 @@
           <a href="cancel/{{task.key}}">cancel</a>
           {% endif %}
         </div>
+        <div class="succeedBtn">
+          {% if task.status in ['PENDING', 'RUNNING']%}
+          <a href="succeed/{{task.key}}">mark done</a>
+          {% endif %}
+        </div>
         <div class="failBtn">
           {% if task.status == 'RUNNING'%}
           <a href="fail/{{task.key}}">fail attempt</a>

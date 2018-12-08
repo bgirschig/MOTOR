@@ -82,6 +82,11 @@ class FailHandler(webapp2.RequestHandler):
     taskQueueCore.release_task(task_key)
     self.redirect("/list.html")
 
+class SucceedHandler(webapp2.RequestHandler):
+  def get(self, task_key):
+    taskQueueCore.succeed_task(task_key)
+    self.redirect(self.request.referer or "/list.html")
+
 class ListHandler(webapp2.RequestHandler):
   def get(self):
     tasks = taskQueueCore.list_tasks()
@@ -119,6 +124,7 @@ app = webapp2.WSGIApplication([
     webapp2.Route(r'/duplicate/<task_key>', handler=DuplicateHandler, methods=['GET']),
     webapp2.Route(r'/cancel/<task_key>', handler=CancelHandler, methods=['GET']),
     webapp2.Route(r'/fail/<task_key>', handler=FailHandler, methods=['GET']),
+    webapp2.Route(r'/succeed/<task_key>', handler=SucceedHandler, methods=['GET']),
     webapp2.Route(r'/list.html', handler=ListHandler, methods=['GET']),
     webapp2.Route(r'/list', handler=ListHandler, methods=['GET']),
     webapp2.Route(r'/lease', handler=LeaseHandler, methods=['GET']),
