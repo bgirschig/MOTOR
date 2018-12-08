@@ -1,6 +1,12 @@
 # MOTOR
 A collection of tools for rendering and publishing videos on demand
 
+## commands
+```bash
+# deploy
+gcloud app deploy **/app.yaml --project kairos-motor --quiet
+```
+
 ## TODO
 - unit testing, continuous integration, continuous delivery (mostly for render service)
 - user management

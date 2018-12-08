@@ -47,15 +47,15 @@ class QueueTest(webapp2.RequestHandler):
 
 class TaskCallbackHandler(webapp2.RequestHandler):
     def post(self):
-        body = json.loads(self.request.body)
-        status = body["status"]
-        clientMail = body["payload"]["clientID"]
+        data = json.loads(self.request.body)
+        status = data["status"]
+        clientMail = data["payload"]["clientID"]
         if clientMail:
             if status == "DONE":
-                create_mail("success", body, to=clientMail, subject="your render request").send()
+                create_mail("success", data, to=clientMail, subject="your render request").send()
             elif status == "FAILED":
-                logging.error("failed task "+body["key"])
-                create_mail("fail", body, to=clientMail, subject="your render request").send()
+                logging.error("failed task "+data["key"])
+                create_mail("fail", data, to=clientMail, subject="your render request").send()
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('ok')

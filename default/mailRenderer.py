@@ -29,8 +29,8 @@ def create_mail(template_name, data, subject="message", **kwargs):
     # create message with default values adn rendered data
     message = mail.EmailMessage(
         sender=SELF_EMAIL,
-        html=html_template.render(data) if html_template else None,
-        body=text_template.render(data) if text_template else None,
+        html=html_template.render(data) if html_template else "",
+        body=text_template.render(data) if text_template else "",
         subject="MOTOR - "+subject
     )
 

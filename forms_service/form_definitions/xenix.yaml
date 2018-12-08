@@ -40,7 +40,7 @@ output:
         field_title: title
         field_language: language
         field_screening_time: screening_time
-    - target: (Footage)/01-footage/image_#.png
+    - target: (Footage)/01-footage/image_#.jpg
       field_src: images/multi
   encoders:
     - -pix_fmt yuv420p video.mp4
