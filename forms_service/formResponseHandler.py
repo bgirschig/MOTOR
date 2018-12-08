@@ -10,12 +10,15 @@ import yaml
 from common.storage_utils import upload_file
 from common import file_utils
 from common import utils
+from common.task_queue_client import Queue
+from google.appengine.api import users
 
 # config
 MAX_FILE_SIZE = 1 * utils.MB
 other_suffix = "_other"
 
 # misc
+queue = Queue()
 other_suffix_length = len(other_suffix)
 
 class FormResponseHandler(webapp2.RequestHandler):
@@ -26,11 +29,18 @@ class FormResponseHandler(webapp2.RequestHandler):
     with open(definition_path, 'r') as f:
       form_definition = yaml.load(f)
     
-    output = form_definition["output"]
-    output = extractData(output, self.request.POST, form_definition)
+    payload = form_definition["output"]
+    payload = extractData(payload, self.request.POST, form_definition)
+
+    user = users.get_current_user()
+    if not user:
+      raise Exception("user should be logged in")
+    payload["clientID"] = user.email()
+
+    task = queue.appendTask(payload, ["render", "form"])
 
     self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps(output, indent=2))
+    self.response.write(json.dumps(task, indent=2))
 
 def extractData(obj, fields, form_definition):
   if type(obj) == str or type(obj) == unicode:
