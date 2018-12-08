@@ -43,7 +43,8 @@ class TaskHandler(webapp2.RequestHandler):
       task = Task(
         payload=request_data.get("payload", {}),
         tags=request_data.get("tags", []),
-        max_attempts=request_data.get("max_attempts", 5))
+        max_attempts=request_data.get("max_attempts", 5),
+        callback_url=request_data.get("callback_url", ""))
     except BadValueError as error:
       raise ValueError("Invalid task data: "+error)
 
@@ -65,7 +66,7 @@ class TaskHandler(webapp2.RequestHandler):
     task = taskQueueCore.update_task(task_key, request_data)
 
     self.response.status = 200
-    self.response.write(json.dumps(task.toDict()))
+    self.response.write(task.serialize())
 
 class DuplicateHandler(webapp2.RequestHandler):
   def get(self, task_key):
@@ -106,7 +107,7 @@ class LeaseHandler(webapp2.RequestHandler):
     task = taskQueueCore.lease_task(tags, lease_duration)
     if task:
       self.response.headers['Content-Type'] = 'application/json'
-      self.response.write(json.dumps(task.toDict()))
+      self.response.write(task.serialize())
     else:
       self.response.write("There are no tasks to be leased")
       self.response.status = 204

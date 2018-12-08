@@ -6,6 +6,7 @@ from google.net.proto.ProtocolBuffer import ProtocolBufferDecodeError
 from Task import Task, Status
 from utils import extractVersions
 import datetime
+from google.appengine.api import urlfetch
 
 def get_task(id):
   """ get a task by id
@@ -58,6 +59,7 @@ def update_task(id, data):
     TypeError -- if a value does not have the expected type
   """
 
+  modified = False
   # The task properties that can be accessed by this method.
   PUBLIC_PROPERTIES = set(["status", "response"])
   # properties not in PUBLIC_PROPERTIES are invalid
@@ -66,25 +68,36 @@ def update_task(id, data):
   if len(invalid_properties) > 0:
     raise KeyError("Some properties are not editable, or do not exist: [{}]".format(', '.join(invalid_properties)))
 
-  try:
-    task = ndb.Key(urlsafe=id).get()
-  except (ProtocolBufferDecodeError, TypeError):
-    raise TaskNotFoudError(id)
-
-  if not task:
-    raise TaskNotFoudError(id)
+  task = get_task(id)
   
   if "status" in data:
     if (task.status not in [Status.PENDING, Status.RUNNING]):
       raise NotAllowed("Status can only be set on 'active' tasks (either pending or running). To re-start a task, duplicate it")
+    
     newStatus = Status(data["status"])
-    task.status = newStatus
+    if newStatus != task.status:
+      task.status = newStatus
+      modified = True
 
   if "response" in data:
-    task.response = data["response"]
+    if data["response"] != task.response:
+      task.response = data["response"]
+      modified = True
 
-  task.put()
+  if modified:
+    notify_task(task)
+    task.put()
+
   return task
+
+def notify_task(task):
+  """ If the given task contains a 'callback url', call that url with the task
+  as a payload """
+  if (task.callback_url):
+    urlfetch.fetch(
+      url=task.callback_url,
+      method=urlfetch.POST,
+      payload=task.serialize())
 
 def duplicate_task(id):
   """ duplicates a task and returns the new one
@@ -99,7 +112,8 @@ def duplicate_task(id):
   newTask = Task(
       payload=task.payload,
       tags=task.tags,
-      max_attempts=task.max_attempts)
+      max_attempts=task.max_attempts,
+      callback_url=task.callback_url)
   newTask.put()
   return newTask
 
@@ -173,6 +187,7 @@ def update_tasks(task_list):
     
     if is_modified:
       updated_tasks.append(task)
+      notify_task(task)
   
   ndb.put_multi(updated_tasks)
 

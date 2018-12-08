@@ -3,6 +3,7 @@ from protorpc import messages
 from google.appengine.ext.ndb import msgprop
 import time
 import datetime
+import json
 
 class Status(messages.Enum):
   PENDING = 0
@@ -21,6 +22,7 @@ class Task(ndb.Model):
   attempt_count = ndb.IntegerProperty(default=0)
   max_attempts = ndb.IntegerProperty(default=5)
   lease_timeout = ndb.DateTimeProperty()
+  callback_url = ndb.StringProperty(default="")
 
   def toDict(self):
     return {
@@ -35,4 +37,8 @@ class Task(ndb.Model):
       'max_attempts': self.max_attempts,
       'lease_timeout': time.mktime(self.lease_timeout.timetuple()) if self.lease_timeout else None,
       'lease_timeout_str': str(self.lease_timeout),
+      'callback_url': self.callback_url,
     }
+  
+  def serialize(self):
+    return json.dumps(self.toDict())

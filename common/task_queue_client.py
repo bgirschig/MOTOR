@@ -67,13 +67,14 @@ class Queue():
       handleError(response)
     return json.loads(response.content)
 
-  def appendTask(self, payload=None, tags=None, max_attempts=None):
+  def appendTask(self, payload=None, tags=None, max_attempts=None, callback_url=default_callback_url):
     """Creates a task and appends it to the queue
     
     Keyword Arguments:
       payload {dict} -- json-serializable payload for the task
       tags {[string]} -- a list of tags to itentify groups of tasks within the queue
       max_attempts {int} -- how many attempts should the task be tried before being declared 'FAILED'
+      callback_url {str} -- When the task's status changes, notify this url
     
     Returns:
       {dict} -- The created Task object's key
@@ -83,6 +84,7 @@ class Queue():
     if payload!=None: request_data["payload"] = payload
     if tags!=None: request_data["tags"] = tags
     if max_attempts!=None: request_data["max_attempts"] = max_attempts
+    if callback_url!=None: request_data["callback_url"] = callback_url
     
     response = urlfetch.fetch(
         url=path.join(self.api_url, 'task'),
