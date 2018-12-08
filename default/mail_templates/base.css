@@ -1,0 +1,48 @@
+* {
+  font-family: sans-serif;
+  color: black;
+}
+html {
+  background-color: rgb(243, 243, 243);
+}
+body {
+  margin: auto;
+  max-width: 650px;
+  background-color: white;
+  padding: 40px;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+h1 {
+  margin-top: 0;
+}
+footer {
+  color: rgb(150, 150, 150);
+  font-size: 0.8em;
+  border-top: 1px solid black;
+  padding-top: 10px;
+  margin-top: 40px;
+}
+footer a {
+  color: inherit;
+}
+.btn {
+  background-color: rgb(0, 162, 255);
+  color: white;
+  padding: 10px;
+  text-decoration: none;
+  box-sizing: border-box;
+  margin: 20px 0px;
+  display: inline-block;
+}
+
+ul .label {
+  margin-right: 10px;
+  min-width: 120px;
+  display: inline-block;
+  font-weight: bold;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}

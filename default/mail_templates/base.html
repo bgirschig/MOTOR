@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <style>
+      {% include 'base.css' %}
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <h1>{% block title %}{% endblock %}</h1>
+    <main>{% block content %}{% endblock %}</main>
+    <footer>MOTOR - <a href="http://kairosworks.net/" target="_blank">kairos</a> - <a href="mailto:bastien.girschig@gmail.com" target="_blank">bastien girschig</a></footer>
+</body>
+</html>

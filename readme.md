@@ -21,6 +21,7 @@ A collection of tools for rendering and publishing videos on demand
     - create a specific service for image handling, converting, etc...
   - something that works both in dev and in prod
 - task queue
+  - callbackUrl
   - Exponential backoff
   - reduce delay & ping rate:
     - on worker node startup, notify queue

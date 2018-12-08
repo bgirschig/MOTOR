@@ -18,20 +18,16 @@ import hashlib
 from random import randrange
 from google.appengine.api import urlfetch
 from common.task_queue_client import Queue
+from mailRenderer import create_mail
 
 SELF_EMAIL = "render@kairos-motor.appspotmail.com"
-ACCEPT_STATUS_CODES = [200, 201, 202]
-RENDERER_API_URL = 'http://40.89.131.172:8081/render'
-# RENDERER_API_URL = 'http://localhost:8081/render'
-TEMPLATES_PATH = path.join(path.dirname(__file__), 'scrapers')
 TASK_QUEUE_API_URL = 'https://task-queue-dot-kairos-motor.appspot.com'
-# TASK_QUEUE_API_URL = 'http://localhost:8081'
 
 # TODO: use cloud endpoints for managing user limits, monitoring, etc...
 # TODO: move render nodes to gcloud compute engine
 
 jinja = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(TEMPLATES_PATH),
+    loader=jinja2.FileSystemLoader(""),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
@@ -75,28 +71,10 @@ class MailRequestHandler(InboundMailHandler):
             request["id"] = key
 
         # Send recap email: parsed info, parsing errors, etc...
-        send_recap_mail(requests, mail_message.sender)
+        create_mail('chanel_makeup', {"requests":requests},
+            to=mail_message.sender, subject='Your render request').send()
 
         logging.info('[main handler] done')
-
-def send_recap_mail(requests, address):
-    logging.info('send_recap_mail')
-    
-    text_template = jinja.get_template('chanel_makeup_mail.txt')
-    mail_content_text = text_template.render({"requests":requests})
-
-    html_template = jinja.get_template('chanel_makeup_mail.html')
-    mail_content_html = html_template.render({"requests":requests})
-
-    message = mail.EmailMessage(
-        sender=SELF_EMAIL,
-        to=address,
-        subject='Your render request',
-    )
-    message.html = mail_content_html
-    message.body = mail_content_text
-
-    message.send()
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
