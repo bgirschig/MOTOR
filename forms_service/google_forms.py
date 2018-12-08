@@ -18,7 +18,7 @@ TASK_QUEUE_API_URL = 'https://task-queue-dot-kairos-motor.appspot.com'
 
 sheets_service = discovery.build('sheets', 'v4', credentials=credentials)
 sheets = sheets_service.spreadsheets()
-queue = Queue(TASK_QUEUE_API_URL)
+queue = Queue()
 
 def checkSpreadsheet(spreadsheet_id, definition_name):
   result = sheets.values().get(spreadsheetId=spreadsheet_id, range="1:10").execute()

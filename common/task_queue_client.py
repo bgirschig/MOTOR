@@ -5,9 +5,13 @@ from google.appengine.api import urlfetch
 import json
 from os import path
 import urllib
+from google.appengine.api.modules.modules import get_hostname
+
+default_api_url = "http://{}".format(get_hostname('task-queue'))
+default_callback_url = "http://{}/task_callback".format(get_hostname('default'))
 
 class Queue():
-  def __init__(self, api_url):
+  def __init__(self, api_url=default_api_url):
     self.api_url = api_url
   
   def list(self):

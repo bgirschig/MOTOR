@@ -31,7 +31,7 @@ jinja = jinja2.Environment(
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-queue = Queue(TASK_QUEUE_API_URL)
+queue = Queue()
 
 class MainPage(webapp2.RequestHandler):
     def get(self):
