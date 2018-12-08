@@ -79,9 +79,8 @@ class Queue():
       callback_url {str} -- When the task's status changes, notify this url
     
     Returns:
-      {dict} -- The created Task object's key
+      {dict} -- The created Task
     """
-
     request_data = {}
     if payload!=None: request_data["payload"] = payload
     if tags!=None: request_data["tags"] = tags
@@ -95,7 +94,7 @@ class Queue():
     )
     if response.status_code != 200:
       handleError(response)
-    return json.loads(response.content)["task_key"]
+    return json.loads(response.content)
   
   def updateTask(self, task_id, status=None, response=None):
     """ Updates a task's properties

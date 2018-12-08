@@ -82,7 +82,7 @@ class MailRequestHandler(InboundMailHandler):
             requests.append(request_datas)
         
         for request in requests:
-            key = queue.appendTask(request, ["render"], 4)
+            key = queue.appendTask(request, ["render"], 4)["task_key"]
             request["id"] = key
 
         # Send recap email: parsed info, parsing errors, etc...

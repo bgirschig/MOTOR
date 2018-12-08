@@ -51,7 +51,7 @@ def checkSpreadsheet(spreadsheet_id, definition_name):
   motorColumn = getColName(headers.index("MOTOR id"))
   
   for request in requests:
-    task_id = queue.appendTask(request, ["render"], 4)
+    task_id = queue.appendTask(request, ["render", "google_form"], 4)["task_key"]
     update_data.append({
       "range": motorColumn+str(request["line_idx"]),
       "values": [[task_id]],
