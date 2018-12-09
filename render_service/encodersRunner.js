@@ -13,7 +13,7 @@ function runEncoders (source, encoders, logger) {
     // for each encoder, enqueue a job, and add its promise to the list
     for (let encoder of encoders) {
         logger.info('encoder: ', encoder);
-        argString = `-y -i ${source} ${encoder}`
+        argString = `-y -loglevel error -i ${source} ${encoder}`
         promises.push(ffmpeg(
             argString,
             {cwd:dirname, logger: logger}
