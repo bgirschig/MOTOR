@@ -70,7 +70,7 @@ class Renderer {
             if (realCount != expectedCount){
                 throw new Error(`Expected ${expectedCount}, found ${realCount} encoded files`);
             }
-            await this.upload_renders(outputDir, request.id);
+            await this.upload_renders(outputDir, request.id, request.clientID);
             
             this.logger.info('cleanup');
             await fs.remove(renderProjectDir);
@@ -192,18 +192,24 @@ class Renderer {
         return outputDir;
     }
 
-    async upload_renders(outputDir, target) {
-        const client = new ftp.Client();
-        try {
-            await client.access(global_config.ftp);
-            await client.cd(this.config.remote_output_dir);
-            await client.uploadDir(outputDir, target);
-            this.logger.info('upload successful');
-            client.close();
-        } catch(err) {
-            client.close();
-            throw new Error('upload failed' + err)
-        }
+    async upload_renders(outputDir, target, accessList="") {
+        const files = await fs.readdir(outputDir);
+        const promises = files.map(filename => {
+            const local_filename = path.join(outputDir, filename);
+            const remote_filename = path.join(this.config.remote_output_dir, target, filename);
+            const remoteFile = storage
+                .bucket(global_config.render_outputs_bucket)
+                .file(remote_filename);          
+            const options = {metadata:{metadata:{}}};
+            options.metadata.metadata.accessList = accessList;
+            return new Promise((resolve, reject)=>{
+                fs.createReadStream(local_filename)
+                    .pipe(remoteFile.createWriteStream(options))
+                    .on('error', reject)
+                    .on('finish', resolve);
+            });
+        });
+        await Promise.all(promises);
     }
 }
 
