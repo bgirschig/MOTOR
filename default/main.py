@@ -5,6 +5,7 @@ import webapp2
 # handlers
 from mailHandler import MailRequestHandler
 from taskCallbackHandler import TaskCallbackHandler
+from frontendHandlers import ResultsPage
 # google stuff
 from google.appengine.api.modules.modules import get_current_module_name
 
@@ -21,4 +22,5 @@ app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/task_callback', TaskCallbackHandler),
 	MailRequestHandler.mapping(),
+	webapp2.Route(r'/results/<request_id>', handler=ResultsPage, methods=['GET']),
 ], debug=True)

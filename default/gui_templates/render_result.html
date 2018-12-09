@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.videoBlock {
+  display: inline-block;
+  position: relative;
+}
+.videoBlock .header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 1rem;
+  display: flex;
+  padding: 10px;
+  padding-bottom: 17px;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+  background-image: linear-gradient(black 60%, rgba(0,0,0,0));
+}
+.videoBlock .header h3 {
+  font-size: inherit;
+}
+video {
+  max-height: 500px;
+  background-color: red;
+}
+</style>
+{% endblock %}
+
+{% block route %}render results{% endblock %}
+
+{% block content %}
+  <ul>
+    {% for file in files %}
+      <div class="videoBlock">
+        <video src="{{file.href}}" controls autoplay></video>
+        <div class="header">
+          <h3>{{file.name}}</h3>
+          <a class="icon-btn" href="{{file.href}}"><i class="icon-down-circled"></i></a>
+        </div>
+      </div>
+    {% endfor %}
+  </ul>
+{% endblock %}
