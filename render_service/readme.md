@@ -8,10 +8,10 @@ https://stackoverflow.com/questions/20445599/auto-start-node-js-server-on-boot
 - Cleanup
 - Add logging √
 - Request status
-    - command parsing
-    - encoding status (ping AME server)
-    - upload / make status available
+  - command parsing
+  - encoding status (ping AME server)
+  - upload / make status available
 - Manager ui
-    - logs √
-    - history √
-    - etc...
+  - logs √
+  - history √
+  - etc...
