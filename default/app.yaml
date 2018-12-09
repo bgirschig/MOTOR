@@ -4,6 +4,8 @@ threadsafe: true
 service: 'default'
 
 handlers:
+- url: /static
+  static_dir: static
 - url: /.*
   script: main.app
 - url: /_ah/mail/.+
