@@ -14,7 +14,7 @@ gcloud app deploy **/app.yaml --project kairos-motor --quiet
 - analytics
 - secure task queue
 - shared templates between render nodes: download on request (with cache?)
-- node manager: restart, clear cache, etc...
+- render node manager: restart, clear cache, etc...
 - switch render node to python
   - We chose js because of nexrender, but since we are not using it...
   - would allow sharing some code with other services (mainly task queue client,
@@ -22,20 +22,17 @@ gcloud app deploy **/app.yaml --project kairos-motor --quiet
 - File management:
   - The dedupliction feature is nice, but there is no way to know if a file is
   still in use (and delete it if it's not).
-  - Image service. either:
+  - Image service. Either:
     - use google's image service
     - create a specific service for image handling, converting, etc...
   - something that works both in dev and in prod
 - task queue
-  - callbackUrl
   - Exponential backoff
   - reduce delay & ping rate:
     - on worker node startup, notify queue
     - on job, notify one of registered worker
     - if fail because not found unregister worker (__|!|__ what about network error?)
     - if fail for other reason, try other worker
-- upload render outputs to cloud storage (instead of ftp)
-  - publish is a next step
 - pretty error handlers: create formatted error pages
 
 ## Services
