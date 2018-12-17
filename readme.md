@@ -34,6 +34,7 @@ gcloud app deploy **/app.yaml --project kairos-motor --quiet
     - if fail because not found unregister worker (__|!|__ what about network error?)
     - if fail for other reason, try other worker
 - pretty error handlers: create formatted error pages
+- Backup system
 
 ## Services
 ### Default
