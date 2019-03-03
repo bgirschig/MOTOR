@@ -6,7 +6,7 @@
         "password": null
     },
     "render_outputs_bucket": "kairos-motor.appspot.com",
-    "ae_render_osx": "/Applications/Adobe After Effects CC 2018/aerender",
+    "ae_render_osx": "/Applications/Adobe After Effects CC 2019/aerender",
     "ae_render": "C:\\Program Files\\Adobe\\Adobe After Effects CC 2018\\Support Files\\aerender.exe",
     "presets_dir": "./encoder_presets",
     "media_encoder": {
