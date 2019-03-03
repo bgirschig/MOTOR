@@ -32,7 +32,7 @@ fields:
       maxSize: 4Mo
 
 output:
-  template: xenix
+  template: xenix2
   compName: main
   resources:
     - target: (Footage)/data.json
