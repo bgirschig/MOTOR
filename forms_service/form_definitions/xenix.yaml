@@ -41,6 +41,6 @@ output:
         field_language: language
         field_screening_time: screening_time
     - target: (Footage)/01-footage/image_#.jpg
-      field_src: images/multi
+      field_src: images/multi,convert_jpg
   encoders:
     - -pix_fmt yuv420p video.mp4
