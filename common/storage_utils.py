@@ -6,7 +6,6 @@ import os
 from google.appengine.api import app_identity
 import cloudstorage as gcs
 import hashlib
-from PIL import Image
 from StringIO import StringIO
 from common.utils import MIME2FORMAT
 
@@ -50,18 +49,8 @@ def upload_image(file_handle, mime_type):
   Returns:
     string -- url to the uploaded image on cloud storage
   """
-  
-  is_image = mime_type.split('/')[0] == "image"
-  if mime_type not in MIME2FORMAT or not is_image:
-    raise TypeError("unexpected mime type:", mime_type)
-
-  img = Image.open(StringIO(file_handle.read()))
-  img = img.convert("RGB")
-  
-  new_img = StringIO()
-  img.save(new_img, MIME2FORMAT[mime_type])
-  new_img.seek(0)
-  url = upload_file(new_img, mime_type)
+  raise NotImplementedError("The upload_image function is deprecated, and no longer implemented")
+  url = upload_file(file_handle, mime_type)
   return url
 
 def cloud_file_exists(filepath):
