@@ -169,6 +169,16 @@
             min="{{constraints.min}}" max="{{constraints.max}}"
             {{ "required" if constraints.required }}>
         </label>
+      
+      {% elif field.type == "time" %}
+        <label>
+          <h3>{{field.displayName or field.name}}</h3>
+          <input
+            type="time"
+            name="{{field.name}}"
+            min="{{constraints.min}}" max="{{constraints.max}}"
+            {{ "required" if constraints.required }}>
+        </label>
 
       {% elif field.type == "files" %}
         <label>

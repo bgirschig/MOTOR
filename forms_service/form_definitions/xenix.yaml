@@ -5,42 +5,46 @@ action: https://form-input-dot-kairos-motor.appspot.com/list.html
 users:
   - test@example.com
   - bastien.girschig@gmail.com
+  - sebastian.vargas@kairosworks.net
 
 fields:
   - name: title
     type: textfield
-    displayName: Name of the film
     constraints:
       maxLength: 50
+  - name: country
+    type: textfield
+  - name: date
+    type: textfield
+  - name: time
+    type: time
+  - name: director
+    type: textfield
   - name: language
-    type: radio
-    choices:
-      - french
-      - english
-      - japanese
-      - _other
-  - name: screening_time
-    displayName: Screening date and time
-    type: datetime
-    constraints:
-      min: now
-  - name: images
-    displayName: Images of the film
+    type: textfield
+  - name: duration
+    type: textfield
+  - name: illustration
+    displayName: Illustration
     type: files
     constraints:
-      maxCount: 3
+      maxCount: 2
       maxSize: 4Mo
 
 output:
-  template: xenix2
+  template: xenix3
   compName: main
   resources:
     - target: (Footage)/data.json
       data:
         field_title: title
+        field_country: country
+        field_date: date
+        field_time: time
+        field_director: director
         field_language: language
-        field_screening_time: screening_time
+        field_duration: duration
     - target: (Footage)/01-footage/image_#.jpg
-      field_src: images/multi,convert_jpg
+      field_src: illustration/multi,convert_jpg
   encoders:
     - -pix_fmt yuv420p video.mp4
