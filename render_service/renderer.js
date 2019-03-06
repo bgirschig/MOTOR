@@ -196,7 +196,9 @@ class Renderer {
     const files = await fs.readdir(outputDir);
     const promises = files.map(filename => {
       const local_filename = path.join(outputDir, filename);
-      const remote_filename = path.join(this.config.remote_output_dir, target, filename);
+      // Not using path.join here because a render node might be on windows,
+      // so path.join would create path with backslashs
+      const remote_filename = this.config.remote_output_dir +"/"+ target +"/"+ filename;
       const remoteFile = storage
         .bucket(global_config.render_outputs_bucket)
         .file(remote_filename);          
