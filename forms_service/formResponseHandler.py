@@ -16,7 +16,7 @@ from io import BytesIO
 from google.appengine.api import images
 
 # config
-MAX_FILE_SIZE = 1 * utils.MB
+MAX_FILE_SIZE = 8 * utils.MB
 other_suffix = "_other"
 
 # misc
