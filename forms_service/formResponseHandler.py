@@ -14,6 +14,7 @@ from common.task_queue_client import Queue
 from google.appengine.api import users
 from io import BytesIO
 from google.appengine.api import images
+from jinja_config import jinja
 
 # config
 MAX_FILE_SIZE = 8 * utils.MB
@@ -25,24 +26,36 @@ other_suffix_length = len(other_suffix)
 
 class FormResponseHandler(webapp2.RequestHandler):
   def post(self):
-    fields = dict(self.request.POST)
+    user = users.get_current_user()
+    if not user: raise Exception("user should be logged in")
 
+    fields = dict(self.request.POST)
     definition_path = fields["form_definition"]
     with open(definition_path, 'r') as f:
       form_definition = yaml.load(f)
-    
-    payload = form_definition["output"]
-    payload = extractData(payload, self.request.POST, form_definition)
 
-    user = users.get_current_user()
-    if not user:
-      raise Exception("user should be logged in")
-    payload["clientID"] = user.email()
+    if "task" in form_definition:
+      payload = form_definition["task"]["payload"]
+      payload = extractData(payload, self.request.POST, form_definition)
+      payload["clientID"] = user.email()
 
-    task = queue.appendTask(payload, ["render", "form"])
+      tags = form_definition["task"].get("tags", [])
+      tags.append('forms-service')
 
-    self.response.headers['Content-Type'] = 'application/json'
-    self.response.write(json.dumps(task, indent=2))
+      max_attempts = form_definition["task"].get("max_attempts", None)
+
+      task = queue.appendTask(payload, tags, max_attempts)
+      url = queue.get_task_url(task["task_key"])
+
+      response = jinja.get_template('response.html').render({
+        "task_url": url,
+        "task_key": task["task_key"],
+        "message": form_definition["formSuccessMessage"],
+        "is_admin": users.is_current_user_admin()
+      })
+      self.response.write(response)
+    else:
+      raise NotImplementedError("Custom form handling is not implemented yet (only task-based)")
 
 def extractData(obj, fields, form_definition):
   if type(obj) == str or type(obj) == unicode:

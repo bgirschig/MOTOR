@@ -5,13 +5,8 @@
 from os import path
 from google.appengine.api import users
 import yaml
-import jinja2
 from common.exceptions import NotAllowed, NotFound
-
-jinja = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(''),
-    extensions=['jinja2.ext.autoescape'],
-    autoescape=True)
+from jinja_config import jinja
 
 def render(form_name):
   # get the form definition
@@ -21,6 +16,10 @@ def render(form_name):
       form_definition = yaml.load(f)
   except IOError:
     raise NotFound('Could not find a form definition named '+form_name)
+
+  # check form definition's validity
+  if "users" not in form_definition:
+    raise ValueError('invalid form definition (missing key "users"): '+form_name)
 
   # we'll want to display a logout url somewhere in our form
   form_definition["logout_url"] = users.create_logout_url('/'+form_name)
@@ -34,7 +33,7 @@ def render(form_name):
 
   # render the form
   if user_can_see:
-    template_path = "form_templates/{}.html".format(form_definition["template"])
+    template_path = form_definition["template"]+".html"
     response = jinja.get_template(template_path).render(form_definition)
     return response
   else:

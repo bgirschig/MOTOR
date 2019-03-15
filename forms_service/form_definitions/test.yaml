@@ -1,0 +1,23 @@
+title: Test form
+template: dark
+users:
+  - test@example.com
+  - bastien.girschig@gmail.com
+  - sebastian.vargas@kairosworks.net
+
+fields:
+  - name: someText
+    displayName: txacfshdgvbf
+    type: textfield
+    constraints:
+      maxLength: 50
+
+formSuccessMessage: Your request was submitted. Your video yill be ready shortly
+
+task:
+  payload:
+    thisIsSomeTest: "yes"
+    field_myTextFromTheForm: someText
+  maxAttempts: 4
+  tags:
+    - test

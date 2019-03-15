@@ -136,6 +136,19 @@ class Queue():
       handleError(response)
     return json.loads(response.content)
 
+  def get_task_url(self, task_id, frontend=True):
+    """Returns the url for a given task ID (to the api or to the frontend,
+    depending on the 'frontend' option)
+    
+    Arguments:
+      task_id {string} -- id of the task
+      frontend {bool} -- If true, returns the url to the task's "frontend" (default: {True})
+    """
+
+    url = path.join(self.api_url, 'task', task_id)
+    if frontend: url+= ".html"
+    return url
+
 def handleError(response):
   try:
     raise Exception(json.loads(response.content))

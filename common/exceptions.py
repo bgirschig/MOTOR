@@ -8,8 +8,8 @@ class FileSizeExceeded(ClientException):
   """Raised when a client tries to upload / handle a size that exceeds a limit"""
   pass
 
-class NotFound(Exception):
+class NotFound(ClientException):
   pass
 
-class NotAllowed(Exception):
+class NotAllowed(ClientException):
   pass

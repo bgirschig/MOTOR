@@ -1,7 +1,6 @@
 title: Xenix movie of the day
 template: dark
 logo: https://scontent-bru2-1.xx.fbcdn.net/v/t1.0-9/30376_643907505625462_27444028_n.jpg?_nc_cat=111&_nc_ht=scontent-bru2-1.xx&oh=52df4f47c0fd840a91c1741273129192&oe=5D1872DF
-action: https://form-input-dot-kairos-motor.appspot.com/list.html
 users:
   - test@example.com
   - bastien.girschig@gmail.com
@@ -32,20 +31,26 @@ fields:
       maxSize: 4Mo
       required: true
 
-output:
-  template: xenix3
-  compName: main
-  resources:
-    - target: (Footage)/data.json
-      data:
-        field_title: title
-        field_country: country
-        field_date: date
-        field_time: time
-        field_director: director
-        field_language: language
-        field_duration: duration
-    - target: (Footage)/01-footage/image_#.jpg
-      field_src: illustration/multi,convert_jpg
-  encoders:
-    - -pix_fmt yuv420p video.mp4
+task:
+  maxAttempts: 4
+  tags:
+    - render
+  payload:
+    template: xenix3
+    compName: main
+    resources:
+      - target: (Footage)/data.json
+        data:
+          field_title: title
+          field_country: country
+          field_date: date
+          field_time: time
+          field_director: director
+          field_language: language
+          field_duration: duration
+      - target: (Footage)/01-footage/image_#.jpg
+        field_src: illustration/multi,convert_jpg
+    encoders:
+      - -pix_fmt yuv420p MOTOR-xenix-video-of-the-day.mp4
+
+formSuccessMessage: Your request was submitted. Your video yill be ready shortly

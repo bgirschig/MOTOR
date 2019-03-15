@@ -1,0 +1,22 @@
+html {
+  background-color: rgb(240, 240, 240);
+  font-family: monospace;
+}
+h2 {
+  margin-bottom: 0;
+}
+.subtitle {
+  margin-top: 0;
+  color: gray;
+}
+.card {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 40px;
+  width: 80%;
+}
+h2, .subtitle, .message {
+  text-align: center;
+}

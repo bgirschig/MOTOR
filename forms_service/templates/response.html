@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Page Title</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    {% include 'main.css' %}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Thanks!</h2>
+    <p class="subtitle">{{message}}</p>
+    
+    {% if is_admin %}
+    <div class="details">
+      <p><strong>Note</strong> You are seeing this because you are logged in as admin</p>
+      <ul>
+        <li><strong>task id: </strong><span>{{task_key}}</span></li>
+        <li><strong>task url: </strong><span><a href="{{task_url}}">task</a></span></li>
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
