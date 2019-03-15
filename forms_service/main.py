@@ -15,17 +15,9 @@ class TestRoute(webapp2.RequestHandler):
 
 class ShowForm(webapp2.RequestHandler):
   def get(self, form_name):
-    try:
-      form = formRenderer.render(form_name)
-    except formRenderer.NotFound as e:
-      self.response.set_status(404)
-      self.response.write(e.message)
-    except formRenderer.NotAllowed:
-      self.response.set_status(401)
-      self.response.write("you do not have access to this resource")
-    else:
-      self.response.headers['Content-Type'] = 'text/html'
-      self.response.write(form)
+    form = formRenderer.render(form_name)
+    self.response.headers['Content-Type'] = 'text/html'
+    self.response.write(form)
 
 class CheckSpreadsheet(webapp2.RequestHandler):
   def get(self):
