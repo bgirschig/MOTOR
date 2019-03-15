@@ -30,6 +30,7 @@ fields:
     constraints:
       maxCount: 2
       maxSize: 4Mo
+      required: true
 
 output:
   template: xenix3
