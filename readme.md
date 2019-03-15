@@ -3,53 +3,22 @@ A collection of tools for rendering and publishing videos on demand
 
 ## commands
 ```bash
-# deploy
+# deploy gcloud services
 gcloud app deploy **/app.yaml --project kairos-motor --quiet
 ```
 
-## TODO
-- unit testing, continuous integration, continuous delivery (mostly for render service)
-- user management
-- move email logic to own service, and redirect mails from default service there
-- analytics
-- secure task queue
-- shared templates between render nodes: download on request (with cache?)
-- render node manager: restart, clear cache, etc...
-- switch render node to python
-  - We chose js because of nexrender, but since we are not using it...
-  - would allow sharing some code with other services (mainly task queue client,
-  but also exceptions, etc...)
-- File management:
-  - The dedupliction feature is nice, but there is no way to know if a file is
-  still in use (and delete it if it's not).
-  - Image service. Either:
-    - use google's image service
-    - create a specific service for image handling, converting, etc...
-  - something that works both in dev and in prod
-- task queue
-  - Exponential backoff
-  - reduce delay & ping rate:
-    - on worker node startup, notify queue
-    - on job, notify one of registered worker
-    - if fail because not found unregister worker (__|!|__ what about network error?)
-    - if fail for other reason, try other worker
-- pretty error handlers: create formatted error pages
-- Backup system
+## Resources
+- [todo / issues](https://github.com/bgirschig/MOTOR/issues)
+- [design doc][0] (describes services and how they interract)
+- [worklog][1] (What is being done, what has been tested)
 
 ## Services
-### Default
-handles emails sent to @kairos-motor.appspotmail.com
+- Default: mail handling (has to be default service), task callback (for now),
+results page (for now), cron jobs (remove?)
+- Console: frontend for admins (edit forms, template management, ...) and maybe
+users (request renders, view costs, etc...)
+- Forms_service: Generic forms rendering and handling
+- Render_service: fulfills render requests
 
-### Task_queue
-manages MOTOR's task queue:
-- add a task to the queue
-- when a worker node is ready, it pulls from the queue
-- when the work is done, status is updated
-
-### forms
-handles motor's form needs
-- render form from definition
-- handle form output (upload files, call callback, ...)
-
-### rendernode
-The worker service for fultilling render requests
+[0]: https://docs.google.com/document/d/1xDYAMEzK8IDPYILng-kyA15-Khsxr7HlmrzoduTy7lk/edit
+[1]: https://docs.google.com/document/d/1JxtRm9Li2JE2ljsibqDyBK7jtxVXf5vXMHP_Een1Uy0/edit

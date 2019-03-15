@@ -1,5 +1,1 @@
 cron:
-- description: "spreadsheets watcher"
-  url: /check_spreadsheets
-  target: forms
-  schedule: every 30 minutes
