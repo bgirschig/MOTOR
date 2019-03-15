@@ -1,22 +1,40 @@
 # pylint: disable=E0611,E0401
- 
+
 import logging
 import traceback
 from google.appengine.api import users
+import jinja2
+from common import exceptions
+from os.path import join as joinpath
+from os.path import dirname
+
+# jinja config
+jinja = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(joinpath(dirname(__file__),"templates")),
+    extensions=['jinja2.ext.autoescape'],
+    autoescape=True)
 
 def handle_500(request, response, exception):
   logging.exception(exception)
-  user = users.get_current_user()
   is_admin = users.is_current_user_admin()
-  if user: is_admin = is_admin or user.email() == "test@example.com"
-  if is_admin:
-    response.write("<style>html{background-color:#ddd;} .red{color:red}</style>")
-    response.write("<p><strong>Note</strong> You are seeing this because you are logged in as admin</p>")
-    response.write("<p class='red'>%s</p>"%exception)
-    response.write("<pre>%s</pre>"%traceback.format_exc())
+  
+  info = {
+    'message': '',
+    'is_admin': is_admin,
+    'traceback': traceback.format_exc(),
+  }
+
+  if isinstance(exception, exceptions.ClientException):
+    response.set_status(400)
+    # For a client exception, always log the detailed message
+    info['message'] = exception.message
   else:
-    response.write('A server error occurred!')
     response.set_status(500)
+    # For a non-client exception, log a generic message to non admin users
+    info['message'] = exception.message if is_admin else "An unexpected error occurred"
+  
+  html = jinja.get_template('error.html').render(info)
+  response.write(html)
 
 def handle_404(request, response, exception):
   is_admin = users.is_current_user_admin()

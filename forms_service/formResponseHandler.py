@@ -26,7 +26,7 @@ other_suffix_length = len(other_suffix)
 class FormResponseHandler(webapp2.RequestHandler):
   def post(self):
     fields = dict(self.request.POST)
-    
+
     definition_path = fields["form_definition"]
     with open(definition_path, 'r') as f:
       form_definition = yaml.load(f)
@@ -73,9 +73,10 @@ def parseItem(field_name, fields, options):
   output = []
   values = fields.getall(field_name)
   for value in values:
-    # files are uploaded and their urls are used in the request
+    # Files are uploaded and their urls are used in the request
     if file_utils.isFile(value):
-      file_utils.checkFile_size(value.file, MAX_FILE_SIZE)
+      # Ensure the file is not too big
+      file_utils.checkFile_size(value.file, MAX_FILE_SIZE, value.filename)
       # image converters
       if "convert_jpg" in options:
         value = convertFormFile(value, 'image/jpeg')

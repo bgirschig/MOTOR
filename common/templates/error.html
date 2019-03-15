@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>MOTOR - Error</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html {
+      background-color: rgb(240, 240, 240);
+      font-family: monospace;
+    }
+    h2 {
+      margin-bottom: 0;
+    }
+    .subtitle {
+      margin-top: 0;
+      color: gray;
+    }
+    .card {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 40px;
+      width: 80%;
+    }
+    h2, .subtitle, .message {
+      text-align: center;
+    }
+    .details {
+      margin-top: 40px;
+    }
+    pre {
+      border: thin solid rgba(0, 0, 0, 0.363);
+      padding: 10px;
+      overflow-x: scroll;
+    }
+    </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Sorry</h2>
+    <p class="subtitle">An error has occurred</p>
+    <p class="message">{{message}}</p>
+    
+    {% if is_admin %}
+    <div class="details">
+      <p><strong>Note</strong> You are seeing this because you are logged in as admin</p>
+      <pre>{{traceback}}</pre>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>
