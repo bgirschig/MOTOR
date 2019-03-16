@@ -41,9 +41,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  --white: rgb(250, 250, 250);
   --light: rgb(218, 218, 218);
-  --dark: rgb(14, 22, 49);
+  --medium: rgb(98, 115, 167);
+  --dark: rgb(47, 61, 104);
 
+  background-color: var(--white);
   display: flex;
   width: 100%;
   height: 100%;
@@ -55,7 +58,6 @@ html, body {
 .navContainer {
   background-color: var(--dark);
   color: var(--light);
-  overflow-y: scroll;
   min-width: 200px;
 }
 nav {
@@ -73,7 +75,5 @@ nav a:hover {
 }
 .viewContainer {
   flex: 1 1;
-  overflow-y: scroll;
-  padding: 15px;
 }
 </style>

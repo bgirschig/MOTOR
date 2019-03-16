@@ -4,3 +4,4 @@ env/
 gcloud_credentials.json
 forms_service/app_credentials.json
 test.js
+node_modules/
