@@ -10,6 +10,8 @@ from StringIO import StringIO
 from common.utils import MIME2FORMAT
 import time
 from base64 import b64encode
+from google.appengine.api import images
+from io import BytesIO
 
 bucket_name = os.environ.get('BUCKET_NAME', app_identity.get_default_gcs_bucket_name())
 retry_params = gcs.RetryParams(backoff_factor=1.1)
@@ -98,3 +100,29 @@ def get_signed_url(resource, delay=3600):
   )
 
   return url
+
+def convert(file, source_mime, target_mime):
+  source_kind, _source_type = source_mime.split("/")
+  target_kind, _target_type = target_mime.split("/")
+
+  if source_kind == "image" and target_kind == "image":
+    img = images.Image(file)
+    
+    # App engine's image API requires at least one transform. This is a no-op
+    # that gets around this limitation (we only want to convert the image
+    # format)
+    img.rotate(360)
+
+    encoding = MIME2FORMAT[target_mime]
+    file = BytesIO(img.execute_transforms(output_encoding=encoding))
+    return file, target_mime
+  else:
+    raise TypeError("No converter defined from types {} to {}".format(
+      source_mime,
+      target_mime,
+    ))
+
+class TypedFile():
+  def __init__(self, file_, mime_type):
+    self.file = file_
+    self.type = mime_type

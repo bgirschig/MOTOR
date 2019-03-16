@@ -7,7 +7,7 @@ definition and returns a formatted dictionnary.
 import webapp2
 import json
 import yaml
-from common.storage_utils import upload_file
+from common import storage_utils
 from common import file_utils
 from common import utils
 from common.task_queue_client import Queue
@@ -91,11 +91,18 @@ def parseItem(field_name, fields, options):
       # Ensure the file is not too big
       file_utils.checkFile_size(value.file, MAX_FILE_SIZE, value.filename)
       # image converters
+      src_file = value.file.getvalue()
       if "convert_jpg" in options:
-        value = convertFormFile(value, 'image/jpeg')
+        converted, mime = storage_utils.convert(src_file, value.type, 'image/jpeg')
+        value = File_field(converted, mime)
       elif "convert_png" in options:
-        value = convertFormFile(value, 'image/png')
-      output.append(upload_file(value.file, value.type))
+        converted, mime = storage_utils.convert(src_file, value.type, 'image/png')
+        value = File_field(converted, mime)
+      else:
+        pass
+
+      # files are uploaded and we store their url in the form response
+      output.append(storage_utils.upload_file(value.file, value.type))
    
     # If there is an "_other" option in a choices list, the form renderer adds
     # an input field to specify what that "other" is, with the name:
@@ -109,49 +116,6 @@ def parseItem(field_name, fields, options):
   
   if("multi" not in options):
     output = output[0] if len(output)>0 else None
-  return output
-
-"""
-Converts the given File_field to another format.
-Mime 'kinds' should match (image to image, text to text, etc...)
-If the input already has the target mime type, the file object is returned.
-"""
-def convertFormFile(formValue, target_mime):
-  output = File_field(formValue.file, formValue.type)
-
-  # Mime types match. No need to convert
-  if formValue.type == target_mime:
-    return output
-  
-  data_kind, data_type = formValue.type.split("/")
-  target_kind, target_type = target_mime.split("/")
-  
-  # convert images
-  if data_kind == "image" and target_kind == "image":
-    img = images.Image(formValue.file.getvalue())
-    
-    # App engine's image API requires at least one transform. This is a no-op
-    # that gets around this limitation (we only need to convert the image
-    # format)
-    img.rotate(360)
-
-    if target_type == "jpeg":
-      output.file = BytesIO(img.execute_transforms(output_encoding=images.JPEG))
-      output.type = 'image/jpg'
-    elif target_type == "png":
-      output.file = BytesIO(img.execute_transforms(output_encoding=images.PNG))
-      output.type = 'image/png'
-    elif target_type == "webp":
-      output.file = BytesIO(img.execute_transforms(output_encoding=images.WEBP))
-      output.type = 'image/webp'
-    else:
-      raise ValueError("No converter defined to {} image".format(target_type))
-
-  else:
-    raise TypeError("No converter defined from types {} to {}".format(
-      formValue.type,
-      target_mime,
-    ))
   return output
 
 class File_field():
