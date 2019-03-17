@@ -15,7 +15,7 @@
 <script>
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-const formsApiUrl = 'http://localhost:8082/api';
+const formsApiUrl = 'https://forms-dot-kairos-motor.appspot.com/api';
 
 export default {
   name: 'FormsView',
