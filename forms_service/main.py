@@ -24,6 +24,7 @@ class ShowForm(HandlerWrapper):
     super(ShowForm, self).__init__(request, response)
     self.login = 'user'
     self.redirect_to_login = True
+    self.content_type = 'text/html'
 
   def get(self, form_name):
     form = formRenderer.render(form_name)

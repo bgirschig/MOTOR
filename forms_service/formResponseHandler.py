@@ -16,6 +16,7 @@ from io import BytesIO
 from google.appengine.api import images
 from jinja_config import jinja
 from common.api_utils import HandlerWrapper
+from Form import Form
 
 # config
 MAX_FILE_SIZE = 8 * utils.MB
@@ -36,9 +37,8 @@ class FormResponseHandler(HandlerWrapper):
     if not user: raise Exception("user should be logged in")
 
     fields = dict(self.request.POST)
-    definition_path = fields["form_definition"]
-    with open(definition_path, 'r') as f:
-      form_definition = yaml.load(f)
+    definition = Form.query(Form.name == fields["form_definition"]).get()
+    form_definition = yaml.load(definition.content)
 
     if "task" in form_definition:
       payload = form_definition["task"]["payload"]
