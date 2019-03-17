@@ -30,6 +30,6 @@ class DefinitonsHandler(HandlerWrapper):
   def get(self, form_name):
     definition = Form.query(Form.name == form_name).get()
     if not definition:
-      raise NotFound("There is no form with name {}".format(form_name))
-    
-    self.response.write(definition.serialize())
+      self.abort(404, "There is no form with name {}".format(form_name))
+    else:
+      self.response.write(definition.serialize())

@@ -15,7 +15,7 @@ export default new Router({
       // addToMenu: true,
     },
     {
-      path: '/forms',
+      path: '/forms/:name?',
       component: FormsView,
       addToMenu: true,
     },
