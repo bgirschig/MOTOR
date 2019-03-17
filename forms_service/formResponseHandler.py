@@ -15,6 +15,7 @@ from google.appengine.api import users
 from io import BytesIO
 from google.appengine.api import images
 from jinja_config import jinja
+from common.api_utils import HandlerWrapper
 
 # config
 MAX_FILE_SIZE = 8 * utils.MB
@@ -24,7 +25,12 @@ other_suffix = "_other"
 queue = Queue()
 other_suffix_length = len(other_suffix)
 
-class FormResponseHandler(webapp2.RequestHandler):
+class FormResponseHandler(HandlerWrapper):
+  def __init__(self, request, response):
+    super(FormResponseHandler, self).__init__(request, response)
+    self.login = 'user'
+    self.content_type = 'text/html; charset=utf-8'
+
   def post(self):
     user = users.get_current_user()
     if not user: raise Exception("user should be logged in")

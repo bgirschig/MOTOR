@@ -37,7 +37,7 @@ class HandlerWrapper(webapp2.RequestHandler):
 
     # set other headers
     self.response.headers['Access-Control-Allow-Methods'] = self.allowed_methods
-    self.response.headers['Content-Type'] = 'application/json'
+    self.response.headers['Content-Type'] = self.content_type
     self.response.headers['Access-Control-Allow-Credentials'] = 'true'
 
     # Handle preflight requests: Never require a login.

@@ -16,11 +16,37 @@ import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 export default {
   name: 'FormsView',
-  mounted() {
-    monaco.editor.create(this.$refs.editor, {
-      value: '# empty definition',
+  data() {
+    return {
+      editor: null,
+    };
+  },
+  async mounted() {
+    let definition = await fetch('http://localhost:8081/api/definitions/truc', {credentials: 'include'});
+    definition = await definition.json();
+
+    this.editor = monaco.editor.create(this.$refs.editor, {
+      value: definition.content,
       language: 'yaml',
     });
+
+    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S, ()=>{
+      this.save();
+    });
+  },
+  methods: {
+    // solution here (????)
+    // https://developers.google.com/identity/sign-in/web/backend-auth
+    async save() {
+      let response = await fetch('http://localhost:8081/api/definitions/truc', {
+        credentials: 'include',
+        method: 'PUT',
+
+        body: this.editor.getValue()});
+
+      response = await response.json();
+      console.log(response);
+    },
   },
 };
 </script>

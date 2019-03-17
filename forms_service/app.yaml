@@ -12,7 +12,7 @@ handlers:
   login: admin
 - url: /.*
   script: main.app
-  login: required
+  # login: required
 
 libraries:
 - name: jinja2

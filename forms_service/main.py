@@ -7,19 +7,30 @@ from formResponseHandler import FormResponseHandler
 from google_forms import checkSpreadsheet
 import formRenderer
 from common import errorHandlers
+from DefinitionsHandler import DefinitonsHandler
+from common.api_utils import HandlerWrapper
 
-class TestRoute(webapp2.RequestHandler):
+class TestRoute(HandlerWrapper):
+  def __init__(self, request, response):
+    super(TestRoute, self).__init__(request, response)
+    self.login = 'public'
+
   def get(self):
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(get_current_module_name() + ' ok')
 
-class ShowForm(webapp2.RequestHandler):
+class ShowForm(HandlerWrapper):
+  def __init__(self, request, response):
+    super(ShowForm, self).__init__(request, response)
+    self.login = 'user'
+    self.redirect_to_login = True
+
   def get(self, form_name):
     form = formRenderer.render(form_name)
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(form)
 
-class CheckSpreadsheet(webapp2.RequestHandler):
+class CheckSpreadsheet(HandlerWrapper):
   def get(self):
     spreadsheet_id = "1ki4K_Y6FPuSTY4tEJP38c_N-kIPMNH3c9JzEQcgp_UU"
     data = checkSpreadsheet(spreadsheet_id, 'xenix')
@@ -28,6 +39,7 @@ class CheckSpreadsheet(webapp2.RequestHandler):
     self.response.write(json.dumps(data))
 
 app = webapp2.WSGIApplication([
+    webapp2.Route(r'/api/definitions/<form_name>', handler=DefinitonsHandler),
     ('/response', FormResponseHandler),
     ('/check_spreadsheets', CheckSpreadsheet),
     ('/', TestRoute),

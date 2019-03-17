@@ -13,3 +13,6 @@ class NotFound(ClientException):
 
 class NotAllowed(ClientException):
   pass
+
+class InvalidYaml(ClientException):
+  pass
