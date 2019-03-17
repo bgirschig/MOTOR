@@ -2,8 +2,8 @@
   <div class="formsView">
     <div class="formsList">
       <h2>Forms</h2>
-      <router-link to="truc">truc</router-link>
-      <router-link to="machin">machin</router-link>
+      <router-link :to="{params: { name: 'truc' }}">truc</router-link>
+      <router-link :to="{params: { name: 'machin' }}">machin</router-link>
     </div>
     <div ref="editor" id="editor" v-show="showEditor"></div>
     <div v-show="!showEditor">
@@ -15,7 +15,7 @@
 <script>
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
-const formsApiUrl = 'http://localhost:8081/api';
+const formsApiUrl = 'http://localhost:8082/api';
 
 export default {
   name: 'FormsView',
@@ -47,7 +47,6 @@ export default {
         method: 'PUT',
         body: this.editor.getValue(),
       });
-      console.log(response);
       if (response.ok) this.$snack.success('saved!');
       else this.$snack.danger('could not save.'); // TODO: give a reason why
     },

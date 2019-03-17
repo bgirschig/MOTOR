@@ -20,9 +20,9 @@ export default {
   data() {
     return {
       menu: [
-        {title: 'spreadsheets', target: 'spreadsheets'},
-        {title: 'forms', target: 'forms'},
-        {title: 'templates', target: 'templates'},
+        {title: 'spreadsheets', target: '/spreadsheets'},
+        {title: 'forms', target: '/forms'},
+        {title: 'templates', target: '/templates'},
       ],
     };
   },
