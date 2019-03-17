@@ -35,17 +35,13 @@ export default {
     });
   },
   methods: {
-    // solution here (????)
-    // https://developers.google.com/identity/sign-in/web/backend-auth
     async save() {
-      let response = await fetch('http://localhost:8081/api/definitions/truc', {
+      const response = await fetch('http://localhost:8081/api/definitions/truc', {
         credentials: 'include',
         method: 'PUT',
-
         body: this.editor.getValue()});
-
-      response = await response.json();
-      console.log(response);
+      if (response.ok) this.$snack.success('saved!');
+      else this.$snack.danger('could not save.'); // TODO: give a reason why
     },
   },
 };
