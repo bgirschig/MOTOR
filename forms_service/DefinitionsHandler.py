@@ -5,6 +5,7 @@ from common.exceptions import NotFound, InvalidYaml
 from common.api_utils import HandlerWrapper
 from Form import Form
 import yaml
+import json
 
 class DefinitonsHandler(HandlerWrapper):
   def __init__(self, request, response):
@@ -33,3 +34,8 @@ class DefinitonsHandler(HandlerWrapper):
       self.abort(404, "There is no form with name {}".format(form_name))
     else:
       self.response.write(definition.serialize())
+
+class DefinitonsList(HandlerWrapper):
+  def get(self):
+    output = [item.name for item in Form.query()]
+    self.response.write(json.dumps(output))

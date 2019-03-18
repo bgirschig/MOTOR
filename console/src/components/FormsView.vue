@@ -2,8 +2,10 @@
   <div class="formsView">
     <div class="formsList">
       <h2>Forms</h2>
-      <router-link :to="{params: { name: 'truc' }}">truc</router-link>
-      <router-link :to="{params: { name: 'machin' }}">machin</router-link>
+      <router-link
+        v-for="formName in forms"
+        :key="formName"
+        :to="{params: { name: formName }}">{{formName}}</router-link>
     </div>
     <div ref="editor" id="editor" v-show="showEditor"></div>
     <div v-show="!showEditor">
@@ -16,6 +18,7 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 
 const formsApiUrl = 'https://forms-dot-kairos-motor.appspot.com/api';
+// const formsApiUrl = 'http://localhost:8082/api';
 
 export default {
   name: 'FormsView',
@@ -23,6 +26,7 @@ export default {
     return {
       editor: null,
       showEditor: true,
+      forms: [],
     };
   },
   watch: {
@@ -41,7 +45,7 @@ export default {
   },
   methods: {
     async save() {
-      const url = formsApiUrl+'/definitions/'+this.$route.params.name;
+      const url = formsApiUrl+'/definition/'+this.$route.params.name;
       const response = await fetch(url, {
         credentials: 'include',
         method: 'PUT',
@@ -51,10 +55,17 @@ export default {
       else this.$snack.danger('could not save.'); // TODO: give a reason why
     },
     async load() {
+      const url = formsApiUrl+'/definitions';
+      const response = await fetch(url, {credentials: 'include'});
+      const formsList = await response.json();
+      this.forms = formsList;
+      this.$set(this, 'forms', formsList);
+      console.log(this.forms);
+
       if (this.$route.params.name) {
         this.showEditor = true;
 
-        const url = formsApiUrl+'/definitions/'+this.$route.params.name;
+        const url = formsApiUrl+'/definition/'+this.$route.params.name;
         const response = await fetch(url, {credentials: 'include'});
         if (response.ok) {
           // load up the contents of the file

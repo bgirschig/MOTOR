@@ -7,7 +7,7 @@ from formResponseHandler import FormResponseHandler
 from google_forms import checkSpreadsheet
 import formRenderer
 from common import errorHandlers
-from DefinitionsHandler import DefinitonsHandler
+from DefinitionsHandler import DefinitonsHandler, DefinitonsList
 from common.api_utils import HandlerWrapper
 
 class TestRoute(HandlerWrapper):
@@ -40,7 +40,8 @@ class CheckSpreadsheet(HandlerWrapper):
     self.response.write(json.dumps(data))
 
 app = webapp2.WSGIApplication([
-    webapp2.Route(r'/api/definitions/<form_name>', handler=DefinitonsHandler),
+    webapp2.Route(r'/api/definitions', handler=DefinitonsList),
+    webapp2.Route(r'/api/definition/<form_name>', handler=DefinitonsHandler),
     ('/response', FormResponseHandler),
     ('/check_spreadsheets', CheckSpreadsheet),
     ('/', TestRoute),
