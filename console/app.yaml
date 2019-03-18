@@ -7,6 +7,7 @@ handlers:
 - url: /
   static_files: dist/index.html
   upload: dist/index.html
+  login: admin
 - url: /(.*)
   static_files: dist/\1
   upload: dist/(.*)
