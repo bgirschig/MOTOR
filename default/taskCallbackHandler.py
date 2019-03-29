@@ -19,20 +19,22 @@ class TaskCallbackHandler(webapp2.RequestHandler):
 
 def renderCallback(data):
 	status = data["status"]
-	clientMail = data["payload"]["clientID"]
-	
-	if not clientMail: return
+	clientMails = []
+	clientMails.append(data["payload"]["clientID"])
+	clientMails.extend(data["payload"]["sendResultsTo"])
+
+	if not clientMails: return
 	
 	if status == "DONE":
 		# create email attachments with the rendered videos
 		renders = get_renders(data["key"])
 		attachments = [Attachment(basename(item.filename), gcs.open(item.filename).read()) for item in renders]
 		# create message
-		message = create_mail("success", data, to=clientMail, subject="your render request", attachments=attachments)
+		message = create_mail("success", data, to=clientMails, subject="your render request", attachments=attachments)
 		message.send()
 	elif status == "FAILED":
 		logging.error("failed task "+data["key"])
-		message = create_mail("fail", data, to=clientMail, subject="your render request")
+		message = create_mail("fail", data, to=clientMails, subject="your render request")
 		message.send()
 	else:
 		logging.error("render callback called on non-finished task")
