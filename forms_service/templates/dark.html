@@ -50,6 +50,13 @@
       outline: none;
       border-bottom: 1.5px solid rgb(48, 113, 167);
     }
+    textarea {
+      resize: none;
+    }
+    textarea:focus {
+      outline: none;
+      border: 1.5px solid rgb(48, 113, 167);
+    }
 
     input[type=submit] {
       margin-top: 2rem;
@@ -189,6 +196,19 @@
               {{ "multiple" if constraints.maxCount != 1 }}
               {{ "required" if constraints.required }}>
           </label>
+
+      {% elif field.type == "textarea" %}
+        <label>
+            <h3>{{field.displayName or field.name}}</h3>
+            <textarea
+              name="{{field.name}}"
+              cols="40"
+              rows="10"
+              maxlength="{{constraints.maxLength}}"
+              {{ "required" if constraints.required }}
+              placeholder="{{field.placeholder}}"></textarea>
+          </label>
+
       {% endif %}
     {% endfor %}
     <input type="hidden" name="form_definition" value="{{form_definition}}">
