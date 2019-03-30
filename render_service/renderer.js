@@ -3,12 +3,9 @@
 
 const path = require("path");
 const fs = require('fs-extra')
-const fetch = require('node-fetch');
-const ftp = require('basic-ftp');
 const spawn = require('child_process').spawn;
 const runEncoders = require('./encodersRunner');
 const global_config = require("./config");
-const logger = require('./logging');
 const {Storage} = require('@google-cloud/storage');
 const prepareRender = require('./prepareRender');
 
@@ -40,6 +37,7 @@ class Renderer {
   }
 
   async render(request, logger) {
+    this.logger = logger;
     const renderProjectDir = path.join(this.config.render_temps_dir, request.id);
     const templateFilePath = path.join(renderProjectDir, 'template.aep');
     try {
@@ -48,15 +46,14 @@ class Renderer {
         return;
       }
       this.busy = true;
-      this.logger = logger;
 
-      let outputDir = await this.prepareRender(request, renderProjectDir,
-          this.config.render_temps_dir, this.config.templates_dir);
+      let outputDir = await prepareRender(request, renderProjectDir,
+          this.config.render_temps_dir, this.config.templates_dir, logger);
       let losslessFile = path.join(outputDir, 'lossless');
       let compName = request.compName || this.config.default_comp_name;
       
       await this.ae_render(templateFilePath, losslessFile, compName);
-      this.logger.info('ae_render finished');
+      logger.info('ae_render finished');
       
       // find the lossless file (after effects replaces the extension
       // depending on the environment, so we can't know)
@@ -65,7 +62,7 @@ class Renderer {
       if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
       losslessFile = losslessFiles[0];
   
-      await runEncoders(losslessFile, request.encoders, this.logger);
+      await runEncoders(losslessFile, request.encoders, logger);
       await fs.remove(losslessFile);
       let realCount = await cout_files(outputDir);
       let expectedCount = request.encoders.length;
@@ -74,13 +71,13 @@ class Renderer {
       }
       await this.upload_renders(outputDir, request.id, request.clientID);
       
-      this.logger.info('cleanup');
+      logger.info('cleanup');
       await fs.remove(renderProjectDir);
       
-      this.logger.info('done');
+      logger.info('done');
       this.busy = false;
     } catch (err) {
-      this.logger.info('cleanup after error: ', err.message);
+      logger.info('cleanup after error: ', err.message);
       await fs.remove(renderProjectDir);
       
       this.busy = false;
@@ -163,44 +160,6 @@ async function findFiles(dir, name) {
   matched = files.filter(file => path.parse(file).name === name);
   matched = matched.map(file=>path.join(dir, file));
   return matched;
-}
-
-async function fetchResource(urls, targetPath) {
-  if(Array.isArray(urls)) {
-    promises = urls.map((url, idx)=>{
-      let targetPathIndexed = targetPath.replace('#', idx);
-      return fetchResource(url, targetPathIndexed)
-    });
-    return Promise.all(promises)
-  }
-  
-  let url = urls;
-  await fs.ensureFile(targetPath)
-
-  if(url.startsWith("gs://")) {
-    const parts = url.replace('gs://', '').split('/');
-    const bucket = parts[0];
-    const file = parts.slice(1).join('/');
-
-    await storage
-      .bucket(bucket)
-      .file(file)
-      .download({destination:targetPath});
-  } else {
-    response = await fetch(url);
-    if (response.status !== 200) {
-      throw new Error('failed asset request: ' + url);
-    } else {
-      const file = fs.createWriteStream(targetPath);
-      let promise = new Promise((resolve, reject)=>{
-        response.body.pipe(file);
-        response.body.on('end', resolve);
-        response.body.on('error', reject);
-      })
-      await promise;
-      file.close();
-    }
-  }
 }
 
 async function test(){

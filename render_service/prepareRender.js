@@ -1,10 +1,18 @@
+const path = require("path");
+const fs = require('fs-extra')
+const fetch = require('node-fetch');
+const {Storage} = require('@google-cloud/storage');
+
+storage = new Storage();
+
 /**
  * Prepares the render "environment" for a given request: downloads or copies
  * all the ressources needed for a render according to the request.
  * @param {renderRequest} request - the object that defines the request
  */
-async function prepareRender (request, renderProjectDir, tmp_dir, templates_dir) {
-  this.logger.info('prepare render');
+async function prepareRender (request, renderProjectDir, tmp_dir, templates_dir,
+    logger) {
+  logger.info('prepare render');
 
   let promises = [];
 
@@ -65,6 +73,44 @@ async function prepareRender (request, renderProjectDir, tmp_dir, templates_dir)
   await Promise.all(promises);
 
   return outputDir;
+}
+
+async function fetchResource(urls, targetPath) {
+  if(Array.isArray(urls)) {
+    promises = urls.map((url, idx)=>{
+      let targetPathIndexed = targetPath.replace('#', idx);
+      return fetchResource(url, targetPathIndexed)
+    });
+    return Promise.all(promises)
+  }
+  
+  let url = urls;
+  await fs.ensureFile(targetPath)
+
+  if(url.startsWith("gs://")) {
+    const parts = url.replace('gs://', '').split('/');
+    const bucket = parts[0];
+    const file = parts.slice(1).join('/');
+
+    await storage
+      .bucket(bucket)
+      .file(file)
+      .download({destination:targetPath});
+  } else {
+    response = await fetch(url);
+    if (response.status !== 200) {
+      throw new Error('failed asset request: ' + url);
+    } else {
+      const file = fs.createWriteStream(targetPath);
+      let promise = new Promise((resolve, reject)=>{
+        response.body.pipe(file);
+        response.body.on('end', resolve);
+        response.body.on('error', reject);
+      })
+      await promise;
+      file.close();
+    }
+  }
 }
 
 module.exports = prepareRender;
