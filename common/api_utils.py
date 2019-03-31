@@ -1,6 +1,22 @@
+# This is required for the firebase lib to work, and needs to remain above the
+# firebase_admin import
+from requests_toolbelt.adapters import appengine
+appengine.monkeypatch()
+
 import webapp2
 from google.appengine.api import users
+import firebase_admin
+from firebase_admin import auth, credentials
 import re
+
+# A list of emails associated with admin account.
+# TODO: ditch the users api, manage user accounts in datastore, with this kind
+# of options (isadmin, email, photo, etc...)
+adminUsers = ['bastien.girschig@gmail.com']
+
+# initialize the firebase default app
+cred = credentials.Certificate('app_credentials.json')
+firebase_admin.initialize_app(cred)
 
 """ Wrapper for our API methods (manages login, CORS, etc...)
 Usage example:
@@ -48,10 +64,20 @@ class HandlerWrapper(webapp2.RequestHandler):
       return
 
     # Handle regular requests
-    user = users.get_current_user()
-    if self.login == 'admin' and not users.is_current_user_admin():
+
+    # Users can be authenticated in two ways: firebase token or users api.
+    id_token = self.request.GET.get('auth', None)
+    try:
+      firebaseUser = auth.verify_id_token(id_token) if id_token else None
+    except ValueError:
+      firebaseUser = None
+
+    self.currentUser = users.get_current_user() or firebaseUser['email']
+    self.isAdmin = (firebaseUser and self.currentUser in adminUsers)\
+                          or users.is_current_user_admin()
+    if self.login == 'admin' and not  self.isAdmin:
       self.handle_auth_fail()
-    elif self.login == 'user' and not user:
+    elif self.login == 'user' and not self.currentUser:
       self.handle_auth_fail()
     else:
       super(HandlerWrapper, self).dispatch()

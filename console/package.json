@@ -16,6 +16,7 @@
   "dependencies": {
     "firebase": "^5.9.2",
     "firebaseui": "^3.5.2",
+    "js-yaml": "^3.13.0",
     "monaco-editor": "^0.16.1",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",

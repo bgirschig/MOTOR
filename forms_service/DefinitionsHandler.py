@@ -10,12 +10,15 @@ import json
 class DefinitonsHandler(HandlerWrapper):
   def __init__(self, request, response):
     super(DefinitonsHandler, self).__init__(request, response)
-    self.login = 'admin'
+    self.login = 'user'
 
   def put(self, form_name):
+    if not self.isAdmin:
+      self.abort(403, 'only admin users are allowed to update forms')
+
     definition = Form.query(Form.name == form_name).get()
     if not definition:
-      definition = Form(name=form_name, content="yolo")
+      definition = Form(name=form_name, content="")
 
     # Ensure the uploaded doc is correct yaml
     try:
@@ -27,7 +30,7 @@ class DefinitonsHandler(HandlerWrapper):
     definition.put()
 
     self.response.write(definition.serialize())
-   
+
   def get(self, form_name):
     definition = Form.query(Form.name == form_name).get()
     if not definition:
