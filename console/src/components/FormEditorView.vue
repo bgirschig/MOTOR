@@ -1,5 +1,5 @@
 <template>
-  <div class="formsView">
+  <div class="FormEditorView">
     <div class="formsList">
       <h2>Forms</h2>
       <router-link
@@ -21,7 +21,7 @@ const formsApiUrl = 'https://forms-dot-kairos-motor.appspot.com/api';
 // const formsApiUrl = 'http://localhost:8082/api';
 
 export default {
-  name: 'FormsView',
+  name: 'FormEditorView',
   data() {
     return {
       editor: null,
@@ -60,7 +60,6 @@ export default {
       const formsList = await response.json();
       this.forms = formsList;
       this.$set(this, 'forms', formsList);
-      console.log(this.forms);
 
       if (this.$route.params.name) {
         this.showEditor = true;
@@ -86,7 +85,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .formsView {
+  .FormEditorView {
     height: 100%;
     display: flex;
   }
