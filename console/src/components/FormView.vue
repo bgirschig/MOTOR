@@ -2,7 +2,8 @@
 
 <template>
   <div id="FormView">
-    Hi there {{$route.params.id}}
+    Hi there {{$route.params.id}}<br>
+    {{fields}}
   </div>
 </template>
 
@@ -10,9 +11,18 @@
 import {getForm} from '../formClient';
 export default {
   name: 'FormView',
-  mounted() {
-    getForm('xenix');
-    console.log('hi!');
+  data() {
+    return {
+      title: '',
+      logo: '',
+      fields: [],
+    };
+  },
+  async mounted() {
+    const definition = await getForm('creditSuisse');
+    this.fields = definition.fields;
+    this.title = definition.title;
+    this.logo = definition.logo;
   },
 };
 </script>

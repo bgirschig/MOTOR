@@ -16,9 +16,7 @@
 
 <script>
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-
-const formsApiUrl = 'https://forms-dot-kairos-motor.appspot.com/api';
-// const formsApiUrl = 'http://localhost:8082/api';
+import {getForm, listForms, saveForm} from '../formClient';
 
 export default {
   name: 'FormEditorView',
@@ -45,36 +43,25 @@ export default {
   },
   methods: {
     async save() {
-      const url = formsApiUrl+'/definition/'+this.$route.params.name;
-      const response = await fetch(url, {
-        credentials: 'include',
-        method: 'PUT',
-        body: this.editor.getValue(),
-      });
-      if (response.ok) this.$snack.success('saved!');
-      else this.$snack.danger('could not save.'); // TODO: give a reason why
+      try {
+        await saveForm(this.$route.params.name, this.editor.getValue());
+        this.$snack.success('saved!');
+      } catch (error) {
+        // TODO: give a more explicit message
+        this.$snack.danger('could not save.');
+      }
     },
     async load() {
-      const url = formsApiUrl+'/definitions';
-      const response = await fetch(url, {credentials: 'include'});
-      const formsList = await response.json();
+      const formsList = await listForms();
       this.forms = formsList;
       this.$set(this, 'forms', formsList);
 
-      if (this.$route.params.name) {
+      const formName = this.$route.params.name;
+      if (formName) {
         this.showEditor = true;
-
-        const url = formsApiUrl+'/definition/'+this.$route.params.name;
-        const response = await fetch(url, {credentials: 'include'});
-        if (response.ok) {
-          // load up the contents of the file
-          const definition = await response.json();
-          this.editor.setValue(definition.content);
-        } else if (response.status === 404) {
-          // if the file was not found, create one
-          const contents = '# New form definition: '+this.$route.params.name;
-          this.editor.setValue(contents);
-        }
+        let definition = await getForm(formName, 'text');
+        if (!definition) definition = '# New form definition: '+formName;
+        this.editor.setValue(definition);
       } else {
         this.showEditor = false;
       }
