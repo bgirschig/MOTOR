@@ -33,17 +33,20 @@ class FormResponseHandler(HandlerWrapper):
     self.content_type = 'text/html; charset=utf-8'
 
   def post(self):
-    user = users.get_current_user()
-    if not user: raise Exception("user should be logged in")
-
     fields = dict(self.request.POST)
     definition = Form.query(Form.name == fields["form_definition"]).get()
     form_definition = yaml.load(definition.content)
 
+    if self.currentUser not in form_definition['users'] and not self.isAdmin:
+      self.abort(403, "user '{}' is not allowed to use the form '{}'".format(
+        self.currentUser,
+        fields["form_definition"]
+      ))
+
     if "task" in form_definition:
       payload = form_definition["task"]["payload"]
       payload = extractData(payload, self.request.POST, form_definition)
-      payload["clientID"] = user.email()
+      payload["clientID"] = self.currentUser
 
       tags = form_definition["task"].get("tags", [])
       tags.append('forms-service')

@@ -9,7 +9,7 @@ from common.exceptions import NotAllowed, NotFound
 from jinja_config import jinja
 from Form import Form
 
-def render(form_name):
+def render(form_name, context):
   # load the form definition
   definition = Form.query(Form.name == form_name).get()
   if not definition:
@@ -24,11 +24,10 @@ def render(form_name):
   form_definition["logout_url"] = users.create_logout_url('/'+form_name)
   # A reference to the form definition will be used while parsing the form
   form_definition["form_definition"] = form_name
+  form_definition["auth"] = context.request.GET.get('auth', '')
 
   # find out if the user is allowed to see this ressource
-  user = users.get_current_user()
-  is_admin = users.is_current_user_admin()
-  user_can_see = user.email() in form_definition["users"] or is_admin
+  user_can_see = context.isAdmin or context.currentUser in form_definition["users"]
 
   # render the form
   if user_can_see:

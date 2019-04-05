@@ -27,7 +27,7 @@ class ShowForm(HandlerWrapper):
     self.content_type = 'text/html'
 
   def get(self, form_name):
-    form = formRenderer.render(form_name)
+    form = formRenderer.render(form_name, self)
     self.response.headers['Content-Type'] = 'text/html'
     self.response.write(form)
 

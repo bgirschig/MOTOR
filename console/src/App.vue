@@ -6,6 +6,7 @@
 
 <style>
 @import url('assets/styles/fonts.css');
+
 html, body {
   font-family: 'UniversLTStdLight';
   width: 100%;
