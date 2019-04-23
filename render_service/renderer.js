@@ -5,53 +5,49 @@ const path = require("path");
 const fs = require('fs-extra')
 const spawn = require('child_process').spawn;
 const runEncoders = require('./encodersRunner');
-const global_config = require("./config");
 const {Storage} = require('@google-cloud/storage');
 const prepareRender = require('./prepareRender');
+const config = require("./config");
+const {findFiles, cout_files} = require('./fileUtils');
 
 storage = new Storage();
-// const RENDER_TEMPS_DIR = path.resolve('./render_tmps');
-// const TEMPLATES_DIR = path.resolve('./templates');
-// const DEFAULT_COMP_NAME = 'main';
-// const REMOTE_OUTPUT_DIR = 'render_outputs'
-
-// const isWin = process.platform === "win32";
-// const aerender = isWin ? config.ae_render : config.ae_render_osx;
-
-// let busy = false;
 
 class Renderer {
-  constructor(config={}) {
-    config = Object.assign({
-      "render_temps_dir": path.resolve('./render_tmps'),
-      "templates_dir": path.resolve('./templates'),
-      "default_comp_name": 'main',
-      "remote_output_dir": 'render_outputs',
-    }, config);
-    this.config = config;
-    
+  constructor() {
     let isWin = process.platform === "win32";
-    this.aerender_cmd = isWin ? global_config.ae_render : global_config.ae_render_osx;
+    this.aerender_cmd = isWin ? config.ae_render : config.ae_render_osx;
     
     this.busy = false;
   }
 
   async render(request, logger) {
     this.logger = logger;
-    const renderProjectDir = path.join(this.config.render_temps_dir, request.id);
-    const templateFilePath = path.join(renderProjectDir, 'template.aep');
+    
+    /** The tempoary folder where the template will be copied and the rendered
+     * video will be created */
+    const renderProjectDir = path.resolve(
+      path.join(config.renderer.render_temps_dir, request.id));
+    /** The after effects file within the renderProjectDir */
+    const templateFilePath = path.resolve(
+      path.join(renderProjectDir, 'template.aep'));
+    
     try {
       if(this.busy) {
         logger.warn('rejected render: the renderer was busy');
         return;
       }
       this.busy = true;
-
-      let outputDir = await prepareRender(request, renderProjectDir,
-          this.config.render_temps_dir, this.config.templates_dir, logger);
-      let losslessFile = path.join(outputDir, 'lossless');
-      let compName = request.compName || this.config.default_comp_name;
       
+      // create the output directory.
+      const outputDir = path.resolve(path.join(renderProjectDir, 'output'));
+      await fs.ensureDir(outputDir);
+
+      // prepare the reder dir: update template, create temp dir, download resources, ...
+      await prepareRender(request, renderProjectDir, logger);
+      
+      // Do the actual rendering
+      let losslessFile = path.join(outputDir, 'lossless');
+      let compName = request.compName || "main";
       await this.ae_render(templateFilePath, losslessFile, compName);
       logger.info('ae_render finished');
       
@@ -62,20 +58,25 @@ class Renderer {
       if (losslessFiles.length > 1) throw new Error('more than one rendered file found');
       losslessFile = losslessFiles[0];
   
+      // convert the video to the various formats required
       await runEncoders(losslessFile, request.encoders, logger);
+      // remove the now useless lossless file
       await fs.remove(losslessFile);
+      // check if the encoders worked properly
       let realCount = await cout_files(outputDir);
       let expectedCount = request.encoders.length;
       if (realCount != expectedCount){
         throw new Error(`Expected ${expectedCount}, found ${realCount} encoded files`);
       }
+
+      logger.info('uploading rendered files to storage');
       await this.upload_renders(outputDir, request.id, request.clientID);
       
       logger.info('cleanup');
       await fs.remove(renderProjectDir);
       
-      logger.info('done');
       this.busy = false;
+      logger.info('done');
     } catch (err) {
       logger.info('cleanup after error: ', err.message);
       await fs.remove(renderProjectDir);
@@ -98,7 +99,7 @@ class Renderer {
         'command-path': this.aerender_cmd,
         'args': args,
       }
-    }, `spawn process: ${this.aerender_cmd + args.join(' ')}`);
+    }, `spawn process: ${this.aerender_cmd +" "+ args.join(' ')}`);
   
     // TODO: add a timeout
     // TODO: bundle multiple stdout lines together before sending, or only
@@ -128,9 +129,9 @@ class Renderer {
       const local_filename = path.join(outputDir, filename);
       // Not using path.join here because a render node might be on windows,
       // so path.join would create path with backslashs
-      const remote_filename = this.config.remote_output_dir +"/"+ target +"/"+ filename;
+      const remote_filename = config.renderer.remote_output_dir +"/"+ target +"/"+ filename;
       const remoteFile = storage
-        .bucket(global_config.render_outputs_bucket)
+        .bucket(config.render_outputs_bucket)
         .file(remote_filename);          
       const options = {metadata:{metadata:{}}};
       options.metadata.metadata.accessList = accessList;
@@ -144,27 +145,5 @@ class Renderer {
     await Promise.all(promises);
   }
 }
-
-async function cout_files(dir) {
-  return fs.readdir(dir).then((files)=>{
-    return files.length;
-  })
-}
-
-/**
- * Returns all the files whose name mathes the given one (equivalent of <dir>/<name>.*)
- * @param {string} name The name of the file(s) to match, without extension
- */
-async function findFiles(dir, name) {
-  let files = await fs.readdir(dir);
-  matched = files.filter(file => path.parse(file).name === name);
-  matched = matched.map(file=>path.join(dir, file));
-  return matched;
-}
-
-async function test(){
-  
-}
-test();
 
 module.exports = Renderer;

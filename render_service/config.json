@@ -16,5 +16,10 @@
     "apiPort": 8081,
     "queue_ping_rate": 30,
     "queue_api_url": "https://task-queue-dot-kairos-motor.appspot.com",
-    "queue_api_url_": "http://localhost:8081"
+    "queue_api_url_": "http://localhost:8081",
+    "renderer": {
+        "render_temps_dir": "./render_tmps",
+        "remote_output_dir": "render_outputs",
+        "templates_dir": "./templates"
+    }
 }
