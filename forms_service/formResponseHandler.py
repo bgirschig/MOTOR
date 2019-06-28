@@ -100,7 +100,7 @@ def parseItem(field_name, fields, options):
       # Ensure the file is not too big
       file_utils.checkFile_size(value.file, MAX_FILE_SIZE, value.filename)
       # image converters
-      src_file = value.file.getvalue()
+      src_file = value.file.read()
       if "convert_jpg" in options:
         converted, mime = storage_utils.convert(src_file, value.type, 'image/jpeg')
         value = File_field(converted, mime)
