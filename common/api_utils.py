@@ -38,7 +38,8 @@ class HandlerWrapper(webapp2.RequestHandler):
 
     self.allowed_origins = [
       r'http://localhost(:\d{2,})?$', # localhost, any port
-      r'https?://\w+-dot-kairos-motor.appspot.com' # all services in kairos-motor
+      r'https?://\w+-dot-kairos-motor.appspot.com', # all services in kairos-motor
+      r'https?://motor-app.ch' # motor-app.ch
     ]
     self.allowed_methods = 'GET, PUT, POST, OPTIONS'
     self.content_type = 'application/json'
