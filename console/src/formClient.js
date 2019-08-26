@@ -27,10 +27,15 @@ export async function authFetch(url, options) {
  * retrieves a form definition
  * @param {string} id - id of the form.
  * @param {string} format - output format: text or json
+ * @param {boolean} enriched - If true, some additionnal values will be added
+ *   automatically by the server, eg. the preview image, based on render
+ *   template name.
  * @return {Promise<Object>} form definition
  */
-export async function getForm(id, format='json') {
-  const response = await authFetch(`${apiurl}/definition/${id}`);
+export async function getForm(id, format='json', enriched=false) {
+  let url = `${apiurl}/definition/${id}`;
+  if (enriched) url += '?enriched';
+  const response = await authFetch(url);
 
   if (response.status === 404) {
     return null;

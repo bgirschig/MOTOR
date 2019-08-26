@@ -3,9 +3,12 @@ from google.appengine.ext import ndb
 from google.net.proto.ProtocolBuffer import ProtocolBufferDecodeError
 from common.exceptions import NotFound, InvalidYaml
 from common.api_utils import HandlerWrapper
+from common.storage_utils import get_signed_url
 from Form import Form
 import yaml
 import json
+
+REMOTE_TEMPLATES_PATH = "/kairos-motor.appspot.com/templates"
 
 class DefinitonsHandler(HandlerWrapper):
   def __init__(self, request, response):
@@ -36,7 +39,18 @@ class DefinitonsHandler(HandlerWrapper):
     if not definition:
       self.abort(404, "There is no form with name {}".format(form_name))
     else:
+      if 'enriched' in self.request.GET:
+        definition = enrich(definition)
       self.response.write(definition.serialize())
+
+def enrich(definition):
+  data = yaml.load(definition.content)
+  if 'previewImage' not in data:
+    templateName = data['task']['payload']['template']
+    previewPath = "{0}/{1}/preview.png".format(REMOTE_TEMPLATES_PATH, templateName)
+    data['previewImage'] = get_signed_url(previewPath)
+    definition.content = yaml.dump(data, default_flow_style=False)
+  return definition
 
 class DefinitonsList(HandlerWrapper):
   def get(self):

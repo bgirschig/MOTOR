@@ -20,6 +20,7 @@
           send
         </div>
       </form>
+      <img v-if="preview" class="preview" :src="preview" alt="output example">
     </div>
 
     <div class="message" v-if="currentMessage" @click="currentMessage=null">
@@ -64,6 +65,7 @@ export default {
     return {
       title: '',
       logo: '',
+      preview: '',
       fields: [],
       messages: {
         'sending': 'Sending your request...',
@@ -79,7 +81,9 @@ export default {
     this.firebaseUnsub = firebase.auth().onAuthStateChanged((user)=>{
       this.currentUser = user.email;
     });
-    const definition = await formsClient.getForm(this.$route.params.id);
+    const definition = await formsClient.getForm(
+        this.$route.params.id, 'json', true);
+    this.preview = definition.previewImage;
     this.fields = definition.fields;
     this.title = definition.title;
     this.logo = definition.logo;
@@ -172,6 +176,10 @@ form {
 .submit:focus::before {
   content: '●';
   margin-right: 5px;
+}
+
+img.preview {
+  width: 100%;
 }
 
 @keyframes blinker {
