@@ -6,6 +6,7 @@ import FormView from '@/components/FormView';
 import LoginView from '@/components/LoginView';
 import TemplatesView from '@/components/TemplatesView';
 import AdminView from '@/components/AdminView';
+import NotFound from '@/components/NotFound';
 import {firebase} from '@/firebase';
 
 Vue.use(Router);
@@ -44,6 +45,15 @@ const router = new Router({
           component: TemplatesView,
         },
       ],
+    },
+    {
+      name: 'notFound',
+      path: '*',
+      component: NotFound,
+      meta: {
+        public: true,
+        fullPage: true,
+      },
     },
   ],
 });
