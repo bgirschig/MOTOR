@@ -6,6 +6,7 @@ ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
+  margin-top: 10px;
 }
 .videoBlock {
   display: inline-block;
@@ -28,15 +29,20 @@ ul {
   font-size: inherit;
 }
 video {
-  max-height: 500px;
+  max-height: calc(100vh - 210px);
   background-color: red;
+}
+a {
+  color: inherit;
 }
 </style>
 {% endblock %}
 
-{% block route %}render results{% endblock %}
+{% block route %} render results{% endblock %}
 
 {% block content %}
+  <a href="https://task-queue-dot-kairos-motor.appspot.com/task/{{request_id}}.html">task queue</a> | 
+  <a href="https://console.cloud.google.com/logs/viewer?project=kairos-motor&minLogLevel=0&expandAll=false&resource=global&logName=projects%2Fkairos-motor%2Flogs%2Fbunyan_log&filters=jsonPayload.tracker:{{request_id}}">logs</a>
   <ul>
     {% for file in files %}
       <div class="videoBlock">

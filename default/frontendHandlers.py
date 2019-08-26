@@ -28,6 +28,7 @@ class ResultsPage(webapp2.RequestHandler):
 		
 		html = jinja.get_template('render_result.html').render({
 			"files": files,
+			"request_id": request_id,
 		})
 
 		self.response.headers['Content-Type'] = 'text/html'
