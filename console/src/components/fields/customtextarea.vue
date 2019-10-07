@@ -8,7 +8,8 @@
       :placeholder="config.placeholder"
       :value="config.value"
       :maxlength="constraints.maxlength"
-      :required="constraints.required" />
+      :required="constraints.required"
+    />
   </label>
 </template>
 
