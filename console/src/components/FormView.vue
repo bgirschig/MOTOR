@@ -35,8 +35,8 @@
     </div>
     <footer>
       <a class="beforelogout" href='https://kairos-studio.world/' target='_blank'>Kairos studio, Visual Affairs</a>
-      <span class='logout' @click="logout" :data-label="currentUser">
-        logout
+      <span class='logout' @click="logout">
+        {{currentUser}} logout
       </span>
     </footer>
   </div>
@@ -147,19 +147,6 @@ header {
   border-bottom: 1px solid black;
 }
 
-footer {
-  padding: 30px;
-  box-sizing: border-box;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  bottom: 0;
-  left: 0;
-  background-color: black;
-  color: white;
-}
-
 .container >>> label {
   display: block;
 }
@@ -174,6 +161,9 @@ footer {
 .container >>> label:focus-within h3::before,
 img {
   width: 100%;
+  max-width: 450px;
+  display: flex;
+  margin: auto;
 }
 
 .container >>> label:hover h3::before,
@@ -286,22 +276,33 @@ a {
   right: 55px;
 }
 
+footer {
+  padding: 30px;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  background-color: black;
+  color: white;
+}
+
 @media screen and (max-width : 600px) {
   footer {
     padding: 30px;
     box-sizing: border-box;
     width: 100%;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     bottom: 0;
     left: 0;
     background-color: black;
     color: white;
-  }
-  .logout {
-    top: 1.2em;
-    right: 5px;
+    display: inline-grid;
+    justify-content: center;
   }
 }
 </style>
