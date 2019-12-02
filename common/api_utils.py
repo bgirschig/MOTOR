@@ -14,7 +14,7 @@ import logging
 # TODO: ditch the users api, manage user accounts in datastore, with this kind
 # of options (isadmin, email, photo, etc...)
 adminUsers = ['bastien.girschig@gmail.com', 'sebastian.vargas@kairosworks.net',
-  'hey@kairosworks.net']
+  'hey@kairosworks.net', 'tobias@milkinteractive.ch']
 
 # initialize the firebase default app
 cred = credentials.Certificate('app_credentials.json')
@@ -39,7 +39,7 @@ class HandlerWrapper(webapp2.RequestHandler):
     self.allowed_origins = [
       r'http://localhost(:\d{2,})?$', # localhost, any port
       r'https?://\w+-dot-kairos-motor.appspot.com', # all services in kairos-motor
-      r'https?://motor-app.ch' # motor-app.ch
+      r'https?://(\w+\.)?motor-app.ch' # motor-app.ch
     ]
     self.allowed_methods = 'GET, PUT, POST, OPTIONS'
     self.content_type = 'application/json'

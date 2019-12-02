@@ -3,7 +3,7 @@
 # standard imports
 import webapp2
 # handlers
-from mailHandler import MailRequestHandler
+# from mailHandler import MailRequestHandler
 from taskCallbackHandler import TaskCallbackHandler
 from frontendHandlers import ResultsPage
 # google stuff
@@ -21,6 +21,6 @@ class MainPage(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
 	('/', MainPage),
 	('/task_callback', TaskCallbackHandler),
-	MailRequestHandler.mapping(),
+	# MailRequestHandler.mapping(),
 	webapp2.Route(r'/results/<request_id>', handler=ResultsPage, methods=['GET']),
 ], debug=True)
