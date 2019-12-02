@@ -14,9 +14,10 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "conversational-form": "^1.0.2",
     "firebase": "^5.9.2",
     "firebaseui": "^3.5.2",
-    "js-yaml": "^3.13.0",
+    "js-yaml": "^3.13.1",
     "monaco-editor": "^0.16.1",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1",
@@ -80,7 +81,7 @@
     "vue-template-compiler": "^2.5.2",
     "webpack": "^3.6.0",
     "webpack-bundle-analyzer": "^2.9.0",
-    "webpack-dev-server": "^2.9.1",
+    "webpack-dev-server": "^2.11.5",
     "webpack-merge": "^4.1.0"
   },
   "engines": {

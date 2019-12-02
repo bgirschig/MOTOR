@@ -3,6 +3,7 @@ import Router from 'vue-router';
 import SpreadsheetsView from '@/components/SpreadsheetsView';
 import FormEditorView from '@/components/FormEditorView';
 import FormView from '@/components/FormView';
+import ConversationView from '@/components/ConversationView';
 import LoginView from '@/components/LoginView';
 import TemplatesView from '@/components/TemplatesView';
 import AdminView from '@/components/AdminView';
@@ -27,6 +28,11 @@ const router = new Router({
       name: 'form',
       path: '/form/:id?',
       component: FormView,
+    },
+    {
+      name: 'conversation',
+      path: '/conversation/:id?',
+      component: ConversationView,
     },
     {
       name: 'admin',
