@@ -11,7 +11,8 @@
     "e2e": "node test/e2e/runner.js",
     "test": "npm run unit && npm run e2e",
     "lint": "eslint --ext .js,.vue src test/unit test/e2e/specs",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "deploy": "npm run build && gcloud app deploy --project kairos-motor --promote"
   },
   "dependencies": {
     "conversational-form": "^1.0.2",

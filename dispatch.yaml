@@ -1,0 +1,3 @@
+dispatch:
+  - url: console.motor-app.ch/*
+    service: console
