@@ -1,30 +1,30 @@
 <template>
   <div>
     <h3>{{config.displayName || config.name}}</h3>
-    <label
-      v-for="choice in config.choices"
-      v-bind:key="choice">
+    <label v-for="choice in config.choices" v-bind:key="choice">
+      <input
+        v-if="choice !== '_other'"
+        :checked="config.default.includes(choice)"
+        type="checkbox"
+        :name="config.name"
+        :value="choice"
+      />
+      <div v-else>
         <input
-          v-if="choice !== '_other'"
-          :checked="config.default.includes(choice)"
           type="checkbox"
           :name="config.name"
-          :value="choice">
-        <div v-else>
-          <input
-            type="checkbox"
-            :name="config.name"
-            :checked="config.default.includes(choice)"
-            value="other">
-          <input
-            type="text"
-            :name="config.name+'_other'"
-            :placeholder="config.placeholder || 'other....'"
-            :value="config.value"
-            :maxlength="config.constraints.maxlength"
-          >
-        </div>
-        {{choice !== '_other' ? choice : ''}}
+          :checked="config.default.includes(choice)"
+          value="other"
+        />
+        <input
+          type="text"
+          :name="config.name+'_other'"
+          :placeholder="config.placeholder || 'other....'"
+          :value="config.value"
+          :maxlength="config.constraints.maxlength"
+        />
+      </div>
+      {{choice !== '_other' ? choice : ''}}
     </label>
   </div>
 </template>

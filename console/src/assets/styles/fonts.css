@@ -7,3 +7,11 @@
   font-weight: normal;
   font-style: normal;
 }
+@font-face {
+  font-family: 'MyFont';
+  src:  url('../fonts/HelveticaNeue-Medium.woff') format('woff'),
+        url('../fonts/HelveticaNeue-Medium.ttf') format('ttf'),
+        url('../fonts/HelveticaNeue-Medium.otf') format('otf');
+  font-weight: normal;
+  font-style: normal;
+}

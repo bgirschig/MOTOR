@@ -1,13 +1,19 @@
 <template>
-  <label>
-    <h3>{{config.displayName || config.name}} <span>({{fileCount}})</span></h3>
+  <label class="labelfor">
+    <span class="custome_files">
+      {{'Upload an image'}}
+      <template v-for="file in fileCount">
+        ({{file.name}})
+      </template>
+    </span>
     <input
       ref="input"
       type="file"
       @change="updateFiles"
       :name="config.name"
       :required="constraints.required"
-      :multiple="constraints.maxCount != 1">
+      :multiple="constraints.maxCount != 1"
+    />
   </label>
 </template>
 
@@ -34,7 +40,7 @@ export default {
       return Object.assign(defaultConstraints, this.config.constraints);
     },
     fileCount() {
-      return this.files.length;
+      return this.files;
     },
   },
   methods: {
@@ -46,7 +52,30 @@ export default {
 };
 </script>
 <style scoped>
-label {
+label.labelfor {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
+}
+.custome_files {
+  font-family: 'myFont';
+  color: black;
+}
+@media screen and (max-width:  600px) {
+  label.labelfor{
+    height: 60px;
+  }
+  .custome_files{
+    font-size: 20px;
+  }
+}
+@media screen and (min-width:  600px) {
+  label.labelfor{
+    height: 100px;
+  }
+  .custome_files{
+    font-size: 35px;
+  }
 }
 </style>

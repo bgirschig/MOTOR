@@ -1,41 +1,44 @@
 <!-- The end user's product: renders the form he can use to request a video -->
 
 <template>
-  <div class="FormView">
-    <div class="container">
-      <header>
-        <span>Motor</span>
-        <span>{{title}}</span>
-      </header>
-      <form ref="form">
-        <fieldset :disabled="disabled">
-          <component
-            :is="'custom'+field.type"
-            v-for="field in fields"
-            v-bind:key="field.name"
-            :config="field"
-          ></component>
-        </fieldset>
-        <div v-if="!disabled" class="submit" @click="submit" tabindex="0">
-          send
-        </div>
-      </form>
-      <img v-if="preview" class="preview" :src="preview" alt="output example">
-    </div>
+  <div class="rootForm">
+    <div class='FormView'>
+      <div class='container'>
+        <header>
+          <span>Motor</span>
+          <span>{{title}}</span>
+        </header>
+        <form ref='form'>
+          <fieldset :disabled="disabled">
+            <component
+              :is="'custom'+field.type"
+              v-for="field in fields"
+              v-bind:key="field.name"
+              :config="field"
+            ></component>
+          </fieldset>
+          <div class='previewroot'>
+            <img v-if="preview" :src="preview" alt="output example" />
+            <div v-if="!disabled" class='submit' @click="submit" tabindex='0'>
+              send
+            </div>
+          </div>
+        </form>
+      </div>
 
-    <div class="message" v-if="currentMessage" @click="currentMessage=null">
-      <div class="popup">
-        <div class="content">{{currentMessage}}</div>
-        <button @click="currentMessage=null">close</button>
+      <div class='message' v-if="currentMessage" @click="currentMessage=null">
+        <div class='popup'>
+          <div class='content'>{{currentMessage}}</div>
+          <button @click="currentMessage=null">close</button>
+        </div>
       </div>
     </div>
-
     <footer>
-      <a href="https://kairos-studio.world/" target="_blank">
+      <a class="beforelogout" href='https://kairos-studio.world/' target='_blank'>
         Kairos studio, Visual Affairs
       </a>
-      <span class="logout" @click="logout" :data-label="currentUser">
-        logout
+      <span class='logout' @click="logout">
+        {{currentUser}} logout
       </span>
     </footer>
   </div>
@@ -54,12 +57,12 @@ import {firebase} from '@/firebase';
 export default {
   name: 'FormView',
   components: {
-    customtextfield: customtextfield,
-    customtextarea: customtextarea,
-    customfiles: customfiles,
-    customradio: customradio,
-    customcheckbox: customcheckbox,
-    customtime: customtime,
+    customtextfield,
+    customtextarea,
+    customfiles,
+    customradio,
+    customcheckbox,
+    customtime,
   },
   data() {
     return {
@@ -68,9 +71,9 @@ export default {
       preview: '',
       fields: [],
       messages: {
-        'sending': 'Sending your request...',
-        'success': 'success!',
-        'error': 'Sorry. An error has occured. Please try again later',
+        sending: 'Sending your request...',
+        success: 'success!',
+        error: 'Sorry. An error has occured. Please try again later',
       },
       currentMessage: null,
       disabled: false,
@@ -84,6 +87,7 @@ export default {
     const definition = await formsClient.getForm(
         this.$route.params.id, 'json', true);
     this.preview = definition.previewImage;
+    console.log(this.preview);
     this.fields = definition.fields;
     this.title = definition.title;
     this.logo = definition.logo;
@@ -115,48 +119,37 @@ export default {
 </script>
 
 <style scoped>
+.rootForm{
+  background-color: black;
+}
 .FormView {
+  display: flex;
+  justify-content: center;
   width: 100%;
   min-height: 100%;
   background-color: black;
-  color: white;
-  padding: 20px;
+  color: black;
   box-sizing: border-box;
   font-size: 100%;
   font-size: 100%;
 }
 .container {
   width: 100%;
-  max-width: 500px;
-  margin-bottom: 80px;
-}
-header {
-  box-sizing: border-box;
-  width: 100%;
-  border: 1px solid white;
-  border-bottom: none;
-  padding: 10px;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-footer {
-  box-sizing: border-box;
-  width: 100%;
-  padding: 30px;
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-  position: fixed;
-  bottom: 0;
-  left: 0;
+  /* max-width: 500px; */
   background-color: black;
 }
-
-form {
+header {
+  font-family: 'myFont';
+  font-size: 18px;
+  background-color: white;
+  box-sizing: border-box;
+  width: 100%;
   padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid black;
 }
+
 .container >>> label {
   display: block;
 }
@@ -165,47 +158,27 @@ form {
   text-transform: capitalize;
   margin-bottom: 1px;
   margin-top: 12px;
-  font-weight: inherit;
+  font-weight: bold;
 }
 .container >>> h3::before,
-.submit::before {
-  content: '○';
-  margin-right: 5px;
-}
 .container >>> label:focus-within h3::before,
-.submit:focus::before {
-  content: '●';
-  margin-right: 5px;
-}
-
-img.preview {
+img {
   width: 100%;
+  max-width: 450px;
+  display: flex;
+  margin: auto;
 }
 
-@keyframes blinker {
-  0%,50%{
-    content: '●';
-  }
-  50.000001%,to{
-    content: '○';
-  }
-}
 .container >>> label:hover h3::before,
-.submit:hover::before {
-  animation: blinker 1.3s linear infinite;
-  margin-right: 5px;
-}
-
-
 .container >>> input {
   background-color: transparent;
   border: none;
-  border-bottom: solid 1px white;
+  border-bottom: solid 1px black;
   width: 100%;
   padding-bottom: 5px;
   box-sizing: border-box;
   outline: none;
-  color: white;
+  color: gray;
 }
 .container >>> textarea {
   background-color: transparent;
@@ -220,10 +193,10 @@ img.preview {
 .container >>> .option_other input {
   width: calc(100% - 23px);
 }
-.container >>> input[type="radio"]{
+.container >>> input[type='radio'] {
   width: auto;
 }
-.container >>> input[type="file"]{
+.container >>> input[type='file'] {
   opacity: 0;
   width: 1px;
   height: 1px;
@@ -232,20 +205,29 @@ img.preview {
   z-index: -1;
 }
 .submit {
+  font-family: 'MyFont';
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  margin-top: 1em;
-  background-color: transparent;
-  color: white;
-  border: none;
+  background-color: white;
+  color: black;
   margin-left: 0;
   padding: 0;
-  font-size: inherit;
-  font-weight: normal;
   outline: none;
+  text-transform: capitalize;
+  width: 100px;
+  height: 50px;
+  font-size: 15px;
+  margin: 80px auto 30px auto;
+  border-radius: 25px;
 }
+
 fieldset {
   border: none;
-  padding: 0;
+  padding: 0px;
+  background-color: white;
+  margin: 0px;
 }
 a {
   color: inherit;
@@ -294,7 +276,36 @@ a {
 .logout::before {
   content: attr(data-label);
   position: absolute;
-  top: -1em;
-  right: 0;
+  right: 55px;
+}
+
+footer {
+  padding: 30px;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  bottom: 0;
+  left: 0;
+  background-color: black;
+  color: white;
+}
+
+@media screen and (max-width : 600px) {
+  footer {
+    padding: 30px;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    bottom: 0;
+    left: 0;
+    background-color: black;
+    color: white;
+    display: inline-grid;
+    justify-content: center;
+  }
 }
 </style>
