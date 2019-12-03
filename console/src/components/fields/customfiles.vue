@@ -1,10 +1,7 @@
 <template>
   <label class="labelfor">
-    <span class="custome_files">
-      {{'Upload an image'}}
-      <template v-for="file in fileCount">
-        ({{file.name}})
-      </template>
+    <span class="custom_files">
+      Upload an image ({{fileCount}})
     </span>
     <input
       ref="input"
@@ -40,7 +37,7 @@ export default {
       return Object.assign(defaultConstraints, this.config.constraints);
     },
     fileCount() {
-      return this.files;
+      return this.files.length;
     },
   },
   methods: {
@@ -58,7 +55,7 @@ label.labelfor {
   align-items: center;
   cursor: pointer;
 }
-.custome_files {
+.custom_files {
   font-family: 'myFont';
   color: black;
 }
@@ -66,7 +63,7 @@ label.labelfor {
   label.labelfor{
     height: 60px;
   }
-  .custome_files{
+  .custom_files{
     font-size: 20px;
   }
 }
@@ -74,7 +71,7 @@ label.labelfor {
   label.labelfor{
     height: 100px;
   }
-  .custome_files{
+  .custom_files{
     font-size: 35px;
   }
 }
